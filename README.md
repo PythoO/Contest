@@ -6,8 +6,8 @@ A contest platform
 
 Install DB
 ==========
-run
-$ python
-
+run python console
+<pre>
 >>>from app import db
 >>>db.create_all()
+</pre>
