@@ -1,5 +1,8 @@
+__author__ = 'pythoo'
+
 from flask import Flask, render_template
 from flask.ext.sqlalchemy import SQLAlchemy
+from core.campaign import Campaigns
 
 app = Flask(__name__)
 # TODO: Move into config file
@@ -17,7 +20,7 @@ def index(contest_id):
 
     """
     campaign = CampaignMonitor()
-    campaign.name = 'google'
+    campaign.name = 'MC'
     db.session.add(campaign)
 
     role = Role()
@@ -32,8 +35,19 @@ def index(contest_id):
 
     db.session.commit()
     """
+
     contest = Contest.query.filter_by(id=contest_id).first_or_404()
+    # TEST FACTORY
+    for camp in contest.campaigns:
+        cp = Campaigns()
+        cp.campaign_factory(camp.name).call_api()
+
+    """
+    db.session.delete(contest)
+    db.session.commit()
+    """
     return render_template('index.html', contest=contest)
+
 
 
 @app.route('/participation')
