@@ -12,10 +12,11 @@ class Contest(db.Model):
 
 class Role(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), unique=True)
+    name = db.Column(db.String(80))
 
 
 class CampaignMonitor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), unique=True)
+    name = db.Column(db.String(80))
     contest_id = db.Column(db.Integer, db.ForeignKey('contest.id'))
+

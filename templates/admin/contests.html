@@ -1,0 +1,32 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{%endblock%}
+
+{% block body %}
+<h2>Contests</h2>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Modify</th>
+            <th>Delete</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for contest in contests %}
+        <tr>
+            <td>{{ contest.id }}</td>
+            <td>{{ contest.title }}</td>
+            <td><a href="" title="" class="btn btn-primary">Modify</a></td>
+            <td><a href="" title="" class="btn btn-warning">Delete</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+        <tfoot></tfoot>
+    </table>
+</div>
+
+
+{% endblock %}

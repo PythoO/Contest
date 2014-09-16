@@ -1,7 +1,7 @@
 Contest
 =======
 
-A contest platform
+A contest platform.
 
 
 Install DB
