@@ -19,7 +19,7 @@
         <tr>
             <td>{{ contest.id }}</td>
             <td>{{ contest.title }}</td>
-            <td><a href="" title="" class="btn btn-primary">Modify</a></td>
+            <td><a href="{{ url_for('contest_modify', contest_id=contest.id) }}" title="" class="btn btn-primary">Modify</a></td>
             <td><a href="" title="" class="btn btn-warning">Delete</a></td>
         </tr>
         {% endfor %}

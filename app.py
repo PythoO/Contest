@@ -80,7 +80,8 @@ def dashboard():
 @app.route('/admin/roles')
 @requires_auth
 def roles():
-    return render_template('admin/roles.html')
+    roles = Role.query.all()
+    return render_template('admin/roles.html', roles=roles)
 
 
 @app.route('/admin/users')
@@ -99,6 +100,13 @@ def contests():
         cache.set('page_contests', page_contests, timeout=2*60)
     return page_contests
 
+
+@app.route('/admin/contests/<int:contest_id>')
+@requires_auth
+def contest_modify(contest_id):
+    contest = Contest.query.filter_by(id=contest_id).first()
+    roles = Role.query.all()
+    return render_template('admin/contest.html', contest=contest, roles=roles)
 
 @app.route('/admin/participations')
 @requires_auth

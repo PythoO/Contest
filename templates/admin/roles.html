@@ -4,4 +4,27 @@
 
 {% block body %}
 <h2>Roles</h2>
+        <div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Modify</th>
+            <th>Delete</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for role in roles %}
+        <tr>
+            <td>{{ role.id }}</td>
+            <td>{{ role.name }}</td>
+            <td><a href="" title="" class="btn btn-primary">Modify</a></td>
+            <td><a href="" title="" class="btn btn-warning">Delete</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+        <tfoot></tfoot>
+    </table>
+</div>
 {% endblock %}
