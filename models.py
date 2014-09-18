@@ -20,3 +20,10 @@ class CampaignMonitor(db.Model):
     name = db.Column(db.String(80))
     contest_id = db.Column(db.Integer, db.ForeignKey('contest.id'))
 
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(80))
+    last_name = db.Column(db.String(80))
+    email = db.Column(db.String(80))
+    password = db.Column(db.String(80))
