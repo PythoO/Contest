@@ -1,10 +1,13 @@
 {% extends "admin/layout.html" %}
 
-{% block title %}{%endblock%}
+{% block title %}Roles{%endblock%}
 
 {% block body %}
 <h2>Roles</h2>
-        <div class="table-responsive">
+<div>
+    <a href="{{url_for('role_create')}}" class="btn btn-success">Add New Role</a>
+</div>
+<div class="table-responsive">
     <table class="table table-striped">
         <thead>
         <tr>
@@ -19,8 +22,9 @@
         <tr>
             <td>{{ role.id }}</td>
             <td>{{ role.name }}</td>
-            <td><a href="" title="" class="btn btn-primary">Modify</a></td>
-            <td><a href="" title="" class="btn btn-warning">Delete</a></td>
+            <td><a href="{{url_for('role_modify', role_id=role.id)}}" class="btn btn-primary">Modify</a></td>
+            <td><a href="{{url_for('role_delete', role_id=role.id)}}" class="btn btn-warning"
+                   onclick="return confirm('Are you sure !!');">Delete</a></td>
         </tr>
         {% endfor %}
         </tbody>

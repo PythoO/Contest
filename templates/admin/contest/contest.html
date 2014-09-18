@@ -1,0 +1,79 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{%endblock%}
+
+{% block body %}
+<ul id="myTab" class="nav nav-tabs" role="tablist">
+    <li class="active"><a href="#contest" role="tab" data-toggle="tab">Contest</a></li>
+    <li class="active"><a href="#builder" role="tab" data-toggle="tab">Contest Builder</a></li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade" id="contest">
+        <form action="{% if contest %}{{url_for('contest_modify', contest_id=contest.id)}}{% endif %}" method="post"
+              role="form" class="form-horizontal">
+            <div class="form-group">
+                <label for="name" class="col-sm-2 control-label">Contest Name</label>
+
+                <div class="col-sm-10">
+                    <input id="name" type="text" value="{% if contest %}{{ contest.title }}{% endif %}"
+                           class="form-control"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="home_text" class="col-sm-2 control-label">Home Page Text</label>
+
+                <div class="col-sm-10">
+                    <textarea id="home_text" class="form-control" rows="3">{% if contest %}{{ contest.home_text }}{%
+                        endif %}</textarea>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="participation_text" class="col-sm-2 control-label">Participation Page Text</label>
+
+                <div class="col-sm-10">
+                    <textarea id="participation_text" class="form-control" rows="3">{% if contest %}{{
+                        contest.participation_text }}{% endif %}</textarea>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="thanks_text" class="col-sm-2 control-label">Thank you Page Text</label>
+
+                <div class="col-sm-10">
+                    <textarea id="thanks_text" class="form-control" rows="3">{% if contest %}{{ contest.thanks_text }}{%
+                        endif %}</textarea>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="role" class="col-sm-2 control-label">Contest Role</label>
+
+                <div class="col-sm-10">
+                    <select id="role" class="form-control">
+                        {% for role in roles %}
+                        <option value="{{role.id}}">{{ role.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button class="btn btn-primary">Submit</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="tab-pan fade" id="builder">
+        Mon builder
+    </div>
+</div>
+{% endblock %}
+
+{%block javascript %}
+<script type="text/javascript">
+    $('#myTab a[href="#contest"]').tab('show')
+    $('#myTab a[href="#builder"]').tab('show')
+
+</script>
+{% endblock %}

@@ -32,21 +32,24 @@ def index(contest_id):
     """
 
     """
-    campaign = CampaignMonitor()
-    campaign.name = 'MC'
+    campaign = MailCampaignModel()
+    campaign.name = 'CM'
     db.session.add(campaign)
 
-    role = Role()
+    role = RoleModel()
     role.name = 'ROLE_ADMIN'
     db.session.add(role)
 
-    contest = Contest()
-    contest.title = 'My contest title 3'
-    contest.campaigns.append(campaign)
+    contest = ContestModel()
+    contest.title = 'My contest title'
+    contest.home_text = 'Welcome to my super contest.'
+    contest.participation_text = 'Want to participate ? just feed this form.'
+    contest.thanks_text = 'Thank you, you\'re participation has been record.<br>Good luck.'
+    contest.mail_campaigns.append(campaign)
     contest.role = role.id
     db.session.add(contest)
 
-    user = User()
+    user = UserModel()
     user.email = 'tetutetu@yopmail.com'
     user.first_name = 'yop'
     user.last_name = 'mail'
@@ -55,12 +58,14 @@ def index(contest_id):
 
     db.session.commit()
     """
-    contest = Contest.query.filter_by(id=contest_id).first_or_404()
+    contest = ContestModel.query.filter_by(id=contest_id).first_or_404()
+    """
     # TEST FACTORY
-    for camp in contest.campaigns:
+    for camp in contest.mail_campaigns:
         cp = Campaigns()
         cp.campaign_factory(camp.name).call_api()
 
+    """
     """
     db.session.delete(contest)
     db.session.commit()
@@ -68,22 +73,24 @@ def index(contest_id):
     return render_template('index.html', contest=contest)
 
 
-@app.route('/participation')
-def participation():
+@app.route('/<int:contest_id>/participation')
+def participation(contest_id):
     """
     Contest Home Page
     :return:
     """
-    return render_template('participation.html')
+    contest = ContestModel.query.filter_by(id=contest_id).first_or_404()
+    return render_template('participation.html', contest=contest)
 
 
-@app.route('/thanks')
-def thanks():
+@app.route('/<int:contest_id>/thanks')
+def thanks(contest_id):
     """
     Contest Home Page
     :return:
     """
-    return render_template('thanks.html')
+    contest = ContestModel.query.filter_by(id=contest_id).first_or_404()
+    return render_template('thanks.html', contest=contest)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -92,7 +99,7 @@ def login():
     if request.method == 'POST':
         form_email = request.form['email']
         form_password = request.form['password']
-        user = User.query.filter_by(email=form_email).first()
+        user = UserModel.query.filter_by(email=form_email).first()
         if user:
             if form_email != user.email:
                 error = 'Oupsss not good.'
@@ -126,26 +133,74 @@ def dashboard():
 @app.route('/admin/users/')
 @login_required
 def users():
-    users = User.query.all()
+    users = UserModel.query.all()
     return render_template('admin/user/users.html', users=users)
+
+
+@app.route('/admin/user', methods=['GET', 'POST'])
+@login_required
+def user_create():
+    roles = RoleModel.query.all()
+    if request.method == 'POST':
+        user = UserModel()
+        save_user(user)
+        return redirect(url_for('users'))
+    return render_template('admin/user/user.html', roles=roles)
+
 
 @app.route('/admin/user/<int:user_id>', methods=['GET','POST'])
 def user_modify(user_id):
-    user = User.query.filter_by(id=user_id).first()
+    user = UserModel.query.filter_by(id=user_id).first()
+    roles = RoleModel.query.all()
     if request.method == 'POST':
-        user.first_name = request.form['first_name']
-        user.last_name = request.form['last_name']
-        user.email = request.form['email']
-        user.password = request.form['password']
-        db.session.add(user)
-        db.session.commit()
-    return render_template('admin/user/user.html', user=user)
+        save_user(user)
+        return redirect(url_for('users'))
+    return render_template('admin/user/user.html', user=user, roles=roles)
+
+
+@app.route('/admin/user/delete/<int:user_id>')
+@login_required
+def user_delete(user_id):
+    user = UserModel.query.filter_by(id=user_id).first()
+    db.session.delete(user)
+    db.session.commit()
+    return redirect(url_for('users'))
+
 
 @app.route('/admin/roles')
 @login_required
 def roles():
-    roles = Role.query.all()
-    return render_template('admin/roles.html', roles=roles)
+    roles = RoleModel.query.all()
+    return render_template('admin/role/roles.html', roles=roles)
+
+
+@app.route('/admin/role', methods=['GET', 'POST'])
+@login_required
+def role_create():
+    if request.method == 'POST':
+        role = RoleModel()
+        save_role(role)
+        return redirect(url_for('roles'))
+    return render_template('admin/role/role.html')
+
+
+@app.route('/admin/role/<int:role_id>', methods=['GET','POST'])
+@login_required
+def role_modify(role_id):
+    role = RoleModel.query.filter_by(id=role_id).first()
+    if request.method == "POST":
+        save_role(role)
+        return redirect(url_for('roles'))
+    return render_template('admin/role/role.html', role=role)
+
+
+@app.route('/admin/role/delete/<int:role_id>')
+@login_required
+def role_delete(role_id):
+    role = RoleModel.query.filter_by(id=role_id).first()
+    db.session.delete(role)
+    db.session.commit()
+    return redirect(url_for('roles'))
 
 
 @app.route('/admin/contests')
@@ -153,24 +208,50 @@ def roles():
 def contests():
     page_contests = cache.get('page_contests')
     if page_contests is None:
-        contests = Contest.query.all()
-        page_contests = render_template('admin/contests.html', contests=contests)
+        contests = ContestModel.query.all()
+        page_contests = render_template('admin/contest/contests.html', contests=contests)
         cache.set('page_contests', page_contests, timeout=2*60)
     return page_contests
 
 
 @app.route('/admin/contests/<int:contest_id>')
-@requires_auth
+@login_required
 def contest_modify(contest_id):
-    contest = Contest.query.filter_by(id=contest_id).first()
-    roles = Role.query.all()
-    return render_template('admin/contest.html', contest=contest, roles=roles)
+    contest = ContestModel.query.filter_by(id=contest_id).first()
+    roles = RoleModel.query.all()
+    return render_template('admin/contest/contest.html', contest=contest, roles=roles)
+
 
 @app.route('/admin/participations')
 @login_required
 def participations():
     return render_template('admin/participations.html')
 
+
+def save_user(user):
+    """
+    Function to save user for create and modify actions
+    :param user:
+    :return:
+    """
+    user.first_name = request.form['first_name']
+    user.last_name = request.form['last_name']
+    user.email = request.form['email']
+    user.password = request.form['password']
+    user.role_id = request.form['role']
+    db.session.add(user)
+    db.session.commit()
+
+
+def save_role(role):
+    """
+    Function to save role for create and modify actions.
+    :param role:
+    :return:
+    """
+    role.name = request.form['name']
+    db.session.add(role)
+    db.session.commit()
 
 if __name__ == '__main__':
     app.debug = True

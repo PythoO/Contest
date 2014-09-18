@@ -3,6 +3,9 @@
 {% block title %}{%endblock%}
 
 {% block body %}
-<h1>Accueil | {{ contest.title }}</h1>
-
+<div class="jumbotron">
+    <h1>{{ contest.title }}</h1>
+    <p class="lead">{{ contest.home_text }}</p>
+    <p><a href="{{ url_for('participation', contest_id=contest.id) }}" class="btn btn-primary">Participate</a> </p>
+</div>
 {% endblock %}
