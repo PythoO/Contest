@@ -1,16 +1,19 @@
 __author__ = 'pythoo'
 
 from functools import wraps
+import flask
 from flask import Flask, render_template, request, Response, session, flash, redirect, url_for
 from flask.ext.sqlalchemy import SQLAlchemy
-from core.campaign import Campaigns
 from werkzeug.contrib.cache import SimpleCache
+
+from flask.views import MethodView
 cache = SimpleCache()
 
 app = Flask(__name__)
 # TODO: Move into config file
 app.secret_key = 'super_secret'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+
 db = SQLAlchemy(app)
 from models import *
 
@@ -100,6 +103,7 @@ def login():
         form_email = request.form['email']
         form_password = request.form['password']
         user = UserModel.query.filter_by(email=form_email).first()
+        app.logger.debug(user.password)
         if user:
             if form_email != user.email:
                 error = 'Oupsss not good.'
@@ -130,63 +134,20 @@ def dashboard():
     return render_template('admin/admin.html')
 
 
-@app.route('/admin/users/')
-@login_required
-def users():
-    users = UserModel.query.all()
-    return render_template('admin/user/users.html', users=users)
-
-
-@app.route('/admin/user', methods=['GET', 'POST'])
-@login_required
-def user_create():
-    roles = RoleModel.query.all()
-    if request.method == 'POST':
-        user = UserModel()
-        save_user(user)
-        return redirect(url_for('users'))
-    return render_template('admin/user/user.html', roles=roles)
-
-
-@app.route('/admin/user/<int:user_id>', methods=['GET','POST'])
-def user_modify(user_id):
-    user = UserModel.query.filter_by(id=user_id).first()
-    roles = RoleModel.query.all()
-    if request.method == 'POST':
-        save_user(user)
-        return redirect(url_for('users'))
-    return render_template('admin/user/user.html', user=user, roles=roles)
-
-
-@app.route('/admin/user/delete/<int:user_id>')
-@login_required
-def user_delete(user_id):
-    user = UserModel.query.filter_by(id=user_id).first()
-    db.session.delete(user)
-    db.session.commit()
-    return redirect(url_for('users'))
-
-
-@app.route('/admin/roles')
+@app.route('/admin/roles', methods=['GET', 'POST'])
 @login_required
 def roles():
-    roles = RoleModel.query.all()
-    return render_template('admin/role/roles.html', roles=roles)
-
-
-@app.route('/admin/role', methods=['GET', 'POST'])
-@login_required
-def role_create():
     if request.method == 'POST':
         role = RoleModel()
         save_role(role)
         return redirect(url_for('roles'))
-    return render_template('admin/role/role.html')
+    all_roles = RoleModel.query.all()
+    return render_template('admin/role/roles.html', roles=all_roles)
 
 
-@app.route('/admin/role/<int:role_id>', methods=['GET','POST'])
+@app.route('/admin/roles/<int:role_id>', methods=['GET', 'PUT', 'DELETE'])
 @login_required
-def role_modify(role_id):
+def roles_modify(role_id):
     role = RoleModel.query.filter_by(id=role_id).first()
     if request.method == "POST":
         save_role(role)
@@ -194,32 +155,23 @@ def role_modify(role_id):
     return render_template('admin/role/role.html', role=role)
 
 
-@app.route('/admin/role/delete/<int:role_id>')
-@login_required
-def role_delete(role_id):
-    role = RoleModel.query.filter_by(id=role_id).first()
-    db.session.delete(role)
-    db.session.commit()
-    return redirect(url_for('roles'))
-
-
 @app.route('/admin/contests')
 @login_required
 def contests():
     page_contests = cache.get('page_contests')
     if page_contests is None:
-        contests = ContestModel.query.all()
-        page_contests = render_template('admin/contest/contests.html', contests=contests)
+        all_contests = ContestModel.query.all()
+        page_contests = render_template('admin/contest/contests.html', contests=all_contests)
         cache.set('page_contests', page_contests, timeout=2*60)
     return page_contests
 
 
-@app.route('/admin/contests/<int:contest_id>')
+@app.route('/admin/contests/<int:contest_id>', methods=['GET', 'PUT', 'DELETE'])
 @login_required
-def contest_modify(contest_id):
+def contests_modify(contest_id):
     contest = ContestModel.query.filter_by(id=contest_id).first()
-    roles = RoleModel.query.all()
-    return render_template('admin/contest/contest.html', contest=contest, roles=roles)
+    all_roles = RoleModel.query.all()
+    return render_template('admin/contest/contest.html', contest=contest, roles=all_roles)
 
 
 @app.route('/admin/participations')
@@ -234,13 +186,22 @@ def save_user(user):
     :param user:
     :return:
     """
-    user.first_name = request.form['first_name']
-    user.last_name = request.form['last_name']
-    user.email = request.form['email']
-    user.password = request.form['password']
-    user.role_id = request.form['role']
-    db.session.add(user)
-    db.session.commit()
+    try:
+        if request.form['first_name']:
+            user.first_name = request.form['first_name']
+        if request.form['last_name']:
+            user.last_name = request.form['last_name']
+        if request.form['email']:
+            user.email = request.form['email']
+        if request.form['password']:
+            user.password = request.form['password']
+        if request.form['role']:
+            user.role_id = request.form['role']
+
+        db.session.merge(user)
+        db.session.commit()
+    except Exception, e:
+        app.logger.debug(e.message)
 
 
 def save_role(role):
@@ -252,6 +213,55 @@ def save_role(role):
     role.name = request.form['name']
     db.session.add(role)
     db.session.commit()
+
+
+class UserAPI(MethodView):
+
+    @login_required
+    def get(self, user_id):
+        if user_id is None:
+            app.logger.debug('GET')
+            all_users = UserModel.query.all()
+            all_roles = RoleModel.query.all()
+            return render_template('admin/user/user.html', users=all_users, roles=all_roles)
+        else:
+            app.logger.debug('GET USER')
+            all_roles = RoleModel.query.all()
+            user = UserModel.query.filter_by(id=user_id).first()
+            return render_template('admin/user/user.html', user=user, roles=all_roles)
+
+    @login_required
+    def post(self):
+        app.logger.debug('POST')
+        user = UserModel()
+        save_user(user)
+        all_users = UserModel.query.all()
+        all_roles = RoleModel.query.all()
+        return render_template('admin/user/user.html', users=all_users, roles=all_roles)
+
+    @login_required
+    def delete(self, user_id):
+        app.logger.debug('DELETE')
+        user = UserModel.query.filter_by(id=user_id).first()
+        db.session.delete(user)
+        db.session.commit()
+        all_users = UserModel.query.all()
+        all_roles = RoleModel.query.all()
+        return render_template('admin/user/user.html', users=all_users, roles=all_roles)
+
+    @login_required
+    def put(self, user_id):
+        app.logger.debug('PUT %s' % user_id)
+        user = UserModel.query.filter_by(id=user_id).first()
+        save_user(user)
+        all_users = UserModel.query.all()
+        all_roles = RoleModel.query.all()
+        return render_template('admin/user/user.html', users=all_users, roles=all_roles)
+
+user_view = UserAPI.as_view('user_api')
+app.add_url_rule('/admin/users/', defaults={'user_id': None}, view_func=user_view, methods=['GET'])
+app.add_url_rule('/admin/users/', view_func=user_view, methods=['POST'])
+app.add_url_rule('/admin/users/<int:user_id>', view_func=user_view, methods=['GET', 'PUT', 'DELETE'])
 
 if __name__ == '__main__':
     app.debug = True

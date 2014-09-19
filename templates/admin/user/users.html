@@ -5,10 +5,12 @@
 {% block body %}
 <h2>Users</h2>
 <div>
-    <a href="{{url_for('user_create')}}" class="btn btn-success">Add New User</a>
+    <a href="{{url_for('user_api')}}" class="btn btn-success">Add New User</a>
+    {% block user_form %}{% endblock %}
 </div>
+{% if not user %}
 <div class="table-responsive">
-    <table class="table table-striped">
+    <table class="table table-striped" id="users-tbl">
         <thead>
         <tr>
             <th>#</th>
@@ -28,12 +30,63 @@
             <td>{{ user.first_name}}</td>
             <td>{{ user.last_name}}</td>
             <td>{{ user.email}}</td>
-            <td><a href="{{url_for('user_modify', user_id=user.id)}}" class="btn btn-primary">Modify</a></td>
-            <td><a href="{{url_for('user_delete', user_id=user.id)}}" class="btn btn-warning" onclick="return confirm('Are you sure !!');">Delete</a></td>
+            <td><a href="{{url_for('user_api', user_id=user.id)}}" class="btn btn-primary">Modify</a></td>
+            <td>
+                <form role="form" action="{{url_for('user_api', user_id=user.id)}}" method="post" class="delete_form">
+                    <button type="submit" class="btn btn-warning" onclick="confirm('Are you sure !!!');">Delete</button>
+                </form>
+
+            </td>
         </tr>
         {% endfor %}
         </tbody>
         <tfoot></tfoot>
     </table>
 </div>
+{% endif %}
+{% endblock %}
+
+{% block js %}
+<script type="text/javascript">
+$(document).ready(function(){
+    $(".delete_form").submit(function( event ){
+        event.preventDefault();
+        var $form = $(this),
+        url =$form.attr("action");
+
+        $.ajax({
+            url: url,
+            type: 'DELETE',
+            success: function(result) {
+                // Do something with the result
+                window.location = '{{url_for('user_api')}}';
+            }
+        });
+    });
+
+    $( "#user_form" ).submit(function( event ){
+        event.preventDefault();
+        var $form = $(this),
+        data = {
+            'first_name': $form.find( "input[name='first_name']" ).val(),
+            'last_name': $form.find( "input[name='last_name']" ).val(),
+            'email': $form.find( "input[name='email']" ).val(),
+            'password': $form.find( "input[name='password']" ).val(),
+            'role': $form.find( "select[name='role']" ).val(),
+        },
+        url =$form.attr("action");
+
+        $.ajax({
+            url: url,
+            type: {%if user %}'PUT'{% else %}'POST'{% endif %},
+            data: data,
+            success: function(result) {
+                // Do something with the result
+                window.location = '{{url_for('user_api')}}';
+            }
+        });
+    });
+});
+
+</script>
 {% endblock %}
