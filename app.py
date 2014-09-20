@@ -5,6 +5,8 @@ from flask import Flask, render_template, request, Response, session, flash, red
 from flask.ext.sqlalchemy import SQLAlchemy
 from core.campaign import Campaigns
 from werkzeug.contrib.cache import SimpleCache
+from flask.views import MethodView
+
 cache = SimpleCache()
 
 app = Flask(__name__)
@@ -167,40 +169,44 @@ def user_delete(user_id):
     return redirect(url_for('users'))
 
 
-@app.route('/admin/roles')
-@login_required
-def roles():
-    roles = RoleModel.query.all()
-    return render_template('admin/role/roles.html', roles=roles)
+class RoleApi(MethodView):
+    @staticmethod
+    def get(role_id):
+        if role_id is None:
+            all_roles = RoleModel.query.all()
+            return render_template('admin/role/roles.html', roles=all_roles)
+        else:
+            role = RoleModel.query.filter_by(id=role_id).first()
+            return render_template('admin/role/roles.html', roles=role)
 
+    @staticmethod
+    def post():
+        try:
+            role = RoleModel()
+            if request.form['name']:
+                role.name = request.form['name']
+                db.session.add(role)
+                db.session.commit()
+        except ValueError as e:
+            return e.message
+        all_roles = RoleModel.query.all()
+        return render_template('admin/role/roles.html', roles=all_roles)
 
-@app.route('/admin/role', methods=['GET', 'POST'])
-@login_required
-def role_create():
-    if request.method == 'POST':
-        role = RoleModel()
-        save_role(role)
-        return redirect(url_for('roles'))
-    return render_template('admin/role/role.html')
+    @staticmethod
+    def delete(role_id):
+        try:
+            role = RoleModel.query.filter_by(id=role_id).first()
+            db.session.delete(role)
+            db.session.commit()
+        except ValueError as e:
+            app.logger.debug(e.message)
+            return e.message
+        return 'true'
 
-
-@app.route('/admin/role/<int:role_id>', methods=['GET','POST'])
-@login_required
-def role_modify(role_id):
-    role = RoleModel.query.filter_by(id=role_id).first()
-    if request.method == "POST":
-        save_role(role)
-        return redirect(url_for('roles'))
-    return render_template('admin/role/role.html', role=role)
-
-
-@app.route('/admin/role/delete/<int:role_id>')
-@login_required
-def role_delete(role_id):
-    role = RoleModel.query.filter_by(id=role_id).first()
-    db.session.delete(role)
-    db.session.commit()
-    return redirect(url_for('roles'))
+role_view = RoleApi.as_view('role_api')
+app.add_url_rule('/admin/roles', defaults={'role_id': None}, view_func=role_view, methods=['GET'])
+app.add_url_rule('/admin/roles', view_func=role_view, methods=['POST'])
+app.add_url_rule('/admin/roles/<int:role_id>', view_func=role_view, methods=['GET', 'PUT', 'DELETE'])
 
 
 @app.route('/admin/contests')
