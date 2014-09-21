@@ -4,23 +4,32 @@
 
 {% block body %}
 <h2>Roles</h2>
-<div>
-    <a href="{{url_for('role_api')}}" class="btn btn-success">Add New Role</a>
-    <form id=role_form" action="{% if role %}{{url_for('role_api', role_id=role.id)}}{% endif %}" method="post" role="form" class="form-horizontal">
-    <div class="form-group">
-        <label class="col-sm-2 control-label">Role Name :</label>
-        <div class="col-sm-10">
-            <input type="text" name="name" class="form-control" value="{% if role %}{{ role.name }}{% else %}ROLE_{% endif %}" placeholder="ROLE_" />
-        </div>
-    </div>
-
-    <div class="form-group">
-        <div class="col-sm-offset-2 col-sm-10">
-            <button class="btn btn-primary">Submit</button>
-        </div>
-    </div>
-</form>
+<div class="open_form">
+    <span>Add Role</span>
+    <span class="caret"></span>
 </div>
+<div class="add_form">
+    <button type="button" class="close"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+    </button>
+    <form id="role_form" action="{% if role %}{{url_for('role_api', role_id=role.id)}}{% endif %}" method="post"
+          role="form" class="form-horizontal">
+        <div class="form-group">
+            <label class="col-sm-2 control-label">Role Name :</label>
+
+            <div class="col-sm-10">
+                <input type="text" name="name" class="form-control"
+                       value="{% if role %}{{ role.name }}{% else %}ROLE_{% endif %}" placeholder="ROLE_"/>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <input type="submit" class="btn btn-primary" value="Submit">
+            </div>
+        </div>
+    </form>
+</div>
+{%if roles %}
 <div class="table-responsive">
     <table class="table table-striped">
         <thead>
@@ -39,9 +48,9 @@
             <td><a href="{{url_for('role_api', role_id=role.id)}}" class="btn btn-primary">Modify</a></td>
             <td>
                 <form class="role_delete" action="{{ url_for('role_api', role_id=role.id) }}">
-                    <input type="submit" class="btn btn-warning" onclick="return confirm('Are you sure !!');" value="Delete">
+                    <input type="submit" class="btn btn-warning" onclick="return confirm('Are you sure !!');"
+                           value="Delete">
                 </form>
-
             </td>
         </tr>
         {% endfor %}
@@ -49,11 +58,22 @@
         <tfoot></tfoot>
     </table>
 </div>
+{% endif %}
 {% endblock %}
 
 {% block javascript %}
 <script type="text/javascript">
 jQuery(document).ready(function ($) {
+
+   $(".add_form").addClass("hidden");
+    $(".open_form").click(function(){
+        $(".add_form").removeClass("hidden");
+    });
+
+    $(".close").click(function(){
+        $(".add_form").addClass("hidden");
+    });
+
     $("#role_form").submit(function(e){
         e.preventDefault();
         var form = $(this).serializeArray();
@@ -61,8 +81,9 @@ jQuery(document).ready(function ($) {
         $.ajax({
             data: form,
             url: url,
-            type:"POST",
+            type:{% if role %}"PUT"{%else%}"POST"{%endif%},
             success:function(response){
+                window.location = '{{ url_for('role_api') }}'
             }
         });
     });
@@ -80,5 +101,6 @@ jQuery(document).ready(function ($) {
         });
     });
 });
+
 </script>
 {% endblock %}

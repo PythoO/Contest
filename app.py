@@ -52,10 +52,9 @@ def index(contest_id):
     db.session.add(contest)
 
     user = UserModel()
-    user.email = 'tetutetu@yopmail.com'
-    user.first_name = 'yop'
-    user.last_name = 'mail'
-    user.password = 'yop'
+    user.email = 'flebrun@aaa.com'
+    user.contact_name = 'Franck Lebrun'
+    user.password = 'Franck'
     db.session.add(user)
 
     db.session.commit()
@@ -132,41 +131,68 @@ def dashboard():
     return render_template('admin/admin.html')
 
 
-@app.route('/admin/users/')
-@login_required
-def users():
-    users = UserModel.query.all()
-    return render_template('admin/user/users.html', users=users)
+class UserApi(MethodView):
+    @staticmethod
+    def get(user_id):
+        if user_id is None:
+            all_roles = RoleModel.query.all()
+            all_users = UserModel.query.all()
+            return render_template('admin/user/users.html', users=all_users, roles=all_roles)
+        else:
+            user = UserModel.query.filter_by(id=user_id).first()
+            all_roles = RoleModel.query.all()
+            return render_template('admin/user/users.html', user=user, roles=all_roles)
 
+    @staticmethod
+    def post():
+        try:
+            user = UserModel()
+            if request.form['contact_name']:
+                user.contact_name = request.form['contact_name']
+            if request.form['email']:
+                user.email = request.form['email']
+            if request.form['password']:
+                user.password = request.form['password']
+            if request.form['role']:
+                user.role_id = request.form['role']
+            db.session.add(user)
+            db.session.commit()
+        except ValueError as e:
+            app.logger.debug(e.message)
+        return 'true'
 
-@app.route('/admin/user', methods=['GET', 'POST'])
-@login_required
-def user_create():
-    roles = RoleModel.query.all()
-    if request.method == 'POST':
-        user = UserModel()
-        save_user(user)
-        return redirect(url_for('users'))
-    return render_template('admin/user/user.html', roles=roles)
+    @staticmethod
+    def put(user_id):
+        try:
+            user = UserModel.query.filter_by(id=user_id).first()
+            if request.form['contact_name']:
+                user.contact_name = request.form['contact_name']
+            if request.form['email']:
+                user.email = request.form['email']
+            if request.form['password']:
+                user.password = request.form['password']
+            if request.form['role']:
+                user.role_id = request.form['role']
+            db.session.add(user)
+            db.session.commit()
+        except ValueError as e:
+            app.logger.debug(e.message)
+        return 'true'
 
+    @staticmethod
+    def delete(user_id):
+        try:
+            user = UserModel.query.filter_by(id=user_id).first()
+            db.session.delete(user)
+            db.session.commit()
+        except ValueError as e:
+            app.logger.debug(e.message)
+        return 'true'
 
-@app.route('/admin/user/<int:user_id>', methods=['GET','POST'])
-def user_modify(user_id):
-    user = UserModel.query.filter_by(id=user_id).first()
-    roles = RoleModel.query.all()
-    if request.method == 'POST':
-        save_user(user)
-        return redirect(url_for('users'))
-    return render_template('admin/user/user.html', user=user, roles=roles)
-
-
-@app.route('/admin/user/delete/<int:user_id>')
-@login_required
-def user_delete(user_id):
-    user = UserModel.query.filter_by(id=user_id).first()
-    db.session.delete(user)
-    db.session.commit()
-    return redirect(url_for('users'))
+user_view = UserApi.as_view('user_api')
+app.add_url_rule('/admin/users', defaults={'user_id': None}, view_func=user_view, methods=['GET'])
+app.add_url_rule('/admin/users', view_func=user_view, methods=['POST'])
+app.add_url_rule('/admin/users/<int:user_id>', view_func=user_view, methods=['GET', 'PUT', 'DELETE'])
 
 
 class RoleApi(MethodView):
@@ -177,7 +203,7 @@ class RoleApi(MethodView):
             return render_template('admin/role/roles.html', roles=all_roles)
         else:
             role = RoleModel.query.filter_by(id=role_id).first()
-            return render_template('admin/role/roles.html', roles=role)
+            return render_template('admin/role/roles.html', role=role)
 
     @staticmethod
     def post():
@@ -188,9 +214,19 @@ class RoleApi(MethodView):
                 db.session.add(role)
                 db.session.commit()
         except ValueError as e:
-            return e.message
-        all_roles = RoleModel.query.all()
-        return render_template('admin/role/roles.html', roles=all_roles)
+            app.logger.debug(e.message)
+        return 'true'
+
+    @staticmethod
+    def put(role_id):
+        try:
+            role = RoleModel.query.filter_by(id=role_id).first()
+            role.name = request.form['name']
+            db.session.merge(role)
+            db.session.commit()
+        except ValueError as e:
+            app.logger.debug(e.message)
+        return 'true'
 
     @staticmethod
     def delete(role_id):
@@ -200,7 +236,6 @@ class RoleApi(MethodView):
             db.session.commit()
         except ValueError as e:
             app.logger.debug(e.message)
-            return e.message
         return 'true'
 
 role_view = RoleApi.as_view('role_api')

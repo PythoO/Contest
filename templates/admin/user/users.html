@@ -4,9 +4,61 @@
 
 {% block body %}
 <h2>Users</h2>
-<div>
-    <a href="{{url_for('user_create')}}" class="btn btn-success">Add New User</a>
+<div class="open_form">
+    <span>Add User</span>
+    <span class="caret"></span>
 </div>
+<div class="add_form">
+    <button type="button" class="close"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+    </button>
+    <form id="user_form"
+          action="{% if user %}{{url_for('user_api', user_id=user.id)}}{% else %}{{ url_for('user_api')}}{% endif %}"
+          method="post" role="form" class="form-horizontal">
+        <div class="form-group">
+            <label class="col-sm-2 control-label">Contact Name :</label>
+
+            <div class="col-sm-10">
+                <input type="text" name="contact_name" class="form-control"
+                       value="{% if user %}{{ user.contact_name }}{% endif %}"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">Email :</label>
+
+            <div class="col-sm-10">
+                <div class="input-group">
+                <div class="input-group-addon">@</div>
+                <input type="email" name="email" class="form-control" value="{% if user %}{{ user.email }}{% endif %}"/>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">Password :</label>
+
+            <div class="col-sm-10">
+                <input type="password" name="password" class="form-control" value=""/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">Roles :</label>
+
+            <div class="col-sm-10">
+                <select name="role" class="form-control">
+                    {% for role in roles %}
+                    <option value="{{role.id}}"
+                    {% if user %}{% if user.role_id == role.id %}selected{% endif %}{% endif %} >{{role.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <button class="btn btn-primary">Submit</button>
+            </div>
+        </div>
+    </form>
+</div>
+{%if users %}
 <div class="table-responsive">
     <table class="table table-striped">
         <thead>
@@ -14,7 +66,6 @@
             <th>#</th>
             <th>Role</th>
             <th>First Name</th>
-            <th>Last Name</th>
             <th>E-mail</th>
             <th>Modify</th>
             <th>Delete</th>
@@ -25,15 +76,63 @@
         <tr>
             <td>{{ user.id }}</td>
             <td>{{ user.role.name }}</td>
-            <td>{{ user.first_name}}</td>
-            <td>{{ user.last_name}}</td>
+            <td>{{ user.contact_name}}</td>
             <td>{{ user.email}}</td>
-            <td><a href="{{url_for('user_modify', user_id=user.id)}}" class="btn btn-primary">Modify</a></td>
-            <td><a href="{{url_for('user_delete', user_id=user.id)}}" class="btn btn-warning" onclick="return confirm('Are you sure !!');">Delete</a></td>
+            <td><a href="{{url_for('user_api', user_id=user.id)}}" class="btn btn-primary">Modify</a></td>
+            <td>
+                <form class="user_delete" action="{{ url_for('user_api', user_id=user.id) }}">
+                    <input type="submit" class="btn btn-warning" onclick="return confirm('Are you sure !!');"
+                           value="Delete">
+                </form>
+            </td>
         </tr>
         {% endfor %}
         </tbody>
         <tfoot></tfoot>
     </table>
 </div>
+{% endif %}
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript">
+jQuery(document).ready(function ($) {
+    $(".add_form").addClass("hidden");
+    $(".open_form").click(function(){
+        $(".add_form").removeClass("hidden");
+    });
+
+    $(".close").click(function(){
+        $(".add_form").addClass("hidden");
+    });
+
+    $("#user_form").submit(function(e){
+        e.preventDefault();
+        var form = $(this).serializeArray();
+        var url = $(this).attr("action");
+        $.ajax({
+            data: form,
+            url: url,
+            type:{% if user %}"PUT"{%else%}"POST"{%endif%},
+            success:function(response){
+                window.location = '{{ url_for('user_api') }}'
+            }
+        });
+    });
+
+    $(".user_delete").click(function(e){
+        console.log($(this))
+        e.preventDefault();
+        var url = $(this).attr("action");
+        $.ajax({
+            url: url,
+            type:"DELETE",
+            success:function(response){
+                window.location = '{{ url_for('user_api') }}'
+            }
+        });
+    });
+});
+
+</script>
 {% endblock %}

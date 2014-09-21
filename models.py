@@ -9,8 +9,7 @@ class RoleModel(db.Model):
 
 class UserModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String(80))
-    last_name = db.Column(db.String(80))
+    contact_name = db.Column(db.String(80))
     email = db.Column(db.String(80))
     role_id = db.Column(db.Integer, db.ForeignKey('role_model.id'))
     role = db.relationship('RoleModel', backref=db.backref('users', lazy='dynamic'))
