@@ -134,25 +134,113 @@ def dashboard():
     return render_template('admin/admin.html')
 
 
-@app.route('/admin/roles', methods=['GET', 'POST'])
-@login_required
-def roles():
-    if request.method == 'POST':
-        role = RoleModel()
-        save_role(role)
-        return redirect(url_for('roles'))
+class UserAPI(MethodView):
+
+    @login_required
+    def get(self, user_id):
+        if user_id is None:
+            all_users = UserModel.query.all()
+            all_roles = RoleModel.query.all()
+            return render_template('admin/user/user.html', users=all_users, roles=all_roles)
+        else:
+            all_roles = RoleModel.query.all()
+            user = UserModel.query.filter_by(id=user_id).first()
+            return render_template('admin/user/user.html', user=user, roles=all_roles)
+
+    @login_required
+    def post(self):
+        try:
+            user = UserModel()
+            save_user(user)
+        except ValueError as e:
+            app.logger.debug(e.message)
+            return 'false'
+        return 'true'
+
+    @login_required
+    def delete(self, user_id):
+        try:
+            user = UserModel.query.filter_by(id=user_id).first()
+            db.session.delete(user)
+            db.session.commit()
+        except ValueError as e:
+            app.logger.debug(e.message)
+            return 'false'
+        return 'true'
+
+    @login_required
+    def put(self, user_id):
+        try:
+            user = UserModel.query.filter_by(id=user_id).first()
+            save_user(user)
+        except ValueError as e:
+            app.logger.debug(e.message)
+            return 'false'
+        return 'true'
+
+user_view = UserAPI.as_view('user_api')
+app.add_url_rule('/admin/users/', defaults={'user_id': None}, view_func=user_view, methods=['GET'])
+app.add_url_rule('/admin/users/', view_func=user_view, methods=['POST'])
+app.add_url_rule('/admin/users/<int:user_id>', view_func=user_view, methods=['GET', 'PUT', 'DELETE'])
+
+
+class RoleApi(MethodView):
+    @staticmethod
+    def get(role_id):
+        if role_id is None:
+            all_roles = RoleModel.query.all()
+            return render_template('admin/role/roles.html', roles=all_roles)
+        else:
+            role = RoleModel.query.filter_by(id=role_id).first()
+            return render_template('admin/role/roles.html', role=role)
+
+    @staticmethod
+    def post():
+        try:
+            role = RoleModel()
+            if request.form['role_name']:
+                role.name = request.form['role_name']
+                db.session.add(role)
+                db.session.commit()
+        except ValueError as e:
+            app.logger.debug(e.message)
+            return 'false'
+        return 'true'
+
+    @staticmethod
+    def put(role_id):
+        try:
+            role = RoleModel.query.filter_by(id=role_id).first()
+            if request.form['role_name']:
+                role.name = request.form['role_name']
+                db.session.add(role)
+                db.session.commit()
+        except ValueError as e:
+            app.logger.debug(e.message)
+            return 'false'
+        return 'true'
+
+    @staticmethod
+    def delete(role_id):
+        try:
+            role = RoleModel.query.filter_by(id=role_id).first()
+            db.session.delete(role)
+            db.session.commit()
+        except ValueError as e:
+            app.logger.debug(e.message)
+            return 'false'
+        return 'true'
+
+role_view = RoleApi.as_view('role_api')
+app.add_url_rule('/admin/roles', defaults={'role_id': None}, view_func=role_view, methods=['GET'])
+app.add_url_rule('/admin/roles', view_func=role_view, methods=['POST'])
+app.add_url_rule('/admin/roles/<int:role_id>', view_func=role_view, methods=['GET', 'PUT', 'DELETE'])
+
+
+@app.route('/test')
+def test():
     all_roles = RoleModel.query.all()
-    return render_template('admin/role/roles.html', roles=all_roles)
-
-
-@app.route('/admin/roles/<int:role_id>', methods=['GET', 'PUT', 'DELETE'])
-@login_required
-def roles_modify(role_id):
-    role = RoleModel.query.filter_by(id=role_id).first()
-    if request.method == "POST":
-        save_role(role)
-        return redirect(url_for('roles'))
-    return render_template('admin/role/role.html', role=role)
+    return flask.jsonify(json_list=[i.serialize for i in all_roles])
 
 
 @app.route('/admin/contests')
@@ -214,54 +302,6 @@ def save_role(role):
     db.session.add(role)
     db.session.commit()
 
-
-class UserAPI(MethodView):
-
-    @login_required
-    def get(self, user_id):
-        if user_id is None:
-            app.logger.debug('GET')
-            all_users = UserModel.query.all()
-            all_roles = RoleModel.query.all()
-            return render_template('admin/user/user.html', users=all_users, roles=all_roles)
-        else:
-            app.logger.debug('GET USER')
-            all_roles = RoleModel.query.all()
-            user = UserModel.query.filter_by(id=user_id).first()
-            return render_template('admin/user/user.html', user=user, roles=all_roles)
-
-    @login_required
-    def post(self):
-        app.logger.debug('POST')
-        user = UserModel()
-        save_user(user)
-        all_users = UserModel.query.all()
-        all_roles = RoleModel.query.all()
-        return render_template('admin/user/user.html', users=all_users, roles=all_roles)
-
-    @login_required
-    def delete(self, user_id):
-        app.logger.debug('DELETE')
-        user = UserModel.query.filter_by(id=user_id).first()
-        db.session.delete(user)
-        db.session.commit()
-        all_users = UserModel.query.all()
-        all_roles = RoleModel.query.all()
-        return render_template('admin/user/user.html', users=all_users, roles=all_roles)
-
-    @login_required
-    def put(self, user_id):
-        app.logger.debug('PUT %s' % user_id)
-        user = UserModel.query.filter_by(id=user_id).first()
-        save_user(user)
-        all_users = UserModel.query.all()
-        all_roles = RoleModel.query.all()
-        return render_template('admin/user/user.html', users=all_users, roles=all_roles)
-
-user_view = UserAPI.as_view('user_api')
-app.add_url_rule('/admin/users/', defaults={'user_id': None}, view_func=user_view, methods=['GET'])
-app.add_url_rule('/admin/users/', view_func=user_view, methods=['POST'])
-app.add_url_rule('/admin/users/<int:user_id>', view_func=user_view, methods=['GET', 'PUT', 'DELETE'])
 
 if __name__ == '__main__':
     app.debug = True

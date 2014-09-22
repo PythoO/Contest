@@ -3,13 +3,13 @@
 {% block title %}{%endblock%}
 
 {% block body %}
-<ul id="myTab" class="nav nav-tabs" role="tablist" data-tabs="tabs">
+<ul id="tabs" class="nav nav-tabs" role="tablist" data-tabs="tabs">
     <li class="active"><a href="#contest" role="tab" data-toggle="tab">Contest</a></li>
-    <li><a href="#builder" role="tab" data-toggle="tab">Contest Builder</a></li>
+    <li class=""><a href="#builder" role="tab" data-toggle="tab">Contest Builder</a></li>
 </ul>
+
 <div class="tab-content">
     <div class="tab-pane fade in active" id="contest">
-        <h2>Contest configuration.</h2>
         <form action="{% if contest %}{{url_for('contest_modify', contest_id=contest.id)}}{% endif %}" method="post"
               role="form" class="form-horizontal">
             <div class="form-group">
@@ -65,12 +65,15 @@
     </div>
 
     <div class="tab-pan fade" id="builder">
-        <h2>Contest Buidler.</h2>
         Mon builder
     </div>
 </div>
 {% endblock %}
 
 {%block javascript %}
-
+<script type="text/javascript">
+jQuery(document).ready(function ($) {
+$('#tabs').tab();
+});
+</script>
 {% endblock %}

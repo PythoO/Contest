@@ -6,6 +6,12 @@ class RoleModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80))
 
+    @property
+    def serialize(self):
+        return {
+            'id': self.id,
+            'name': self.name
+        }
 
 class UserModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -46,7 +46,7 @@
 {% endif %}
 {% endblock %}
 
-{% block js %}
+{% block javascript %}
 <script type="text/javascript">
 $(document).ready(function(){
     $(".delete_form").submit(function( event ){
@@ -64,7 +64,7 @@ $(document).ready(function(){
         });
     });
 
-    $( "#user_form" ).submit(function( event ){
+    $( ".user_form" ).submit(function( event ){
         event.preventDefault();
         var $form = $(this),
         data = {

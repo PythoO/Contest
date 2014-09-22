@@ -2,7 +2,7 @@
 
 {% block user_form %}
 <form role="form" action="{% if user %}{{url_for('user_api', user_id=user.id)}}{%else%}{{url_for('user_api')}}{%endif%}"
-      method="post" class="form-horizontal" id="user_form">
+      method="post" class="form-horizontal user_form">
     <div class="form-group">
         <label class="col-sm-2 control-label">First Name :</label>
 
