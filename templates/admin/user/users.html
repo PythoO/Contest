@@ -3,9 +3,10 @@
 {% block title %}Users{%endblock%}
 
 {% block body %}
-<h2>Users</h2>
+<h2><span class="glyphicon glyphicon-user"></span> Users</h2>
+<hr>
 <div>
-    <a href="{{url_for('user_api')}}" class="btn btn-success">Add New User</a>
+    <a href="{{url_for('users')}}" class="btn btn-success">Add New User</a>
     {% block user_form %}{% endblock %}
 </div>
 {% if not user %}
@@ -30,9 +31,9 @@
             <td>{{ user.first_name}}</td>
             <td>{{ user.last_name}}</td>
             <td>{{ user.email}}</td>
-            <td><a href="{{url_for('user_api', user_id=user.id)}}" class="btn btn-primary">Modify</a></td>
+            <td><a href="{{url_for('users', user_id=user.id)}}" class="btn btn-primary">Modify</a></td>
             <td>
-                <form role="form" action="{{url_for('user_api', user_id=user.id)}}" method="post" class="delete_form">
+                <form role="form" action="{{url_for('user', user_id=user.id)}}" method="post" class="delete_form">
                     <button type="submit" class="btn btn-warning" onclick="confirm('Are you sure !!!');">Delete</button>
                 </form>
 
@@ -59,7 +60,7 @@ $(document).ready(function(){
             type: 'DELETE',
             success: function(result) {
                 // Do something with the result
-                window.location = '{{url_for('user_api')}}';
+                window.location = '{{url_for('users')}}';
             }
         });
     });
@@ -82,7 +83,7 @@ $(document).ready(function(){
             data: data,
             success: function(result) {
                 // Do something with the result
-                window.location = '{{url_for('user_api')}}';
+                window.location = '{{url_for('users')}}';
             }
         });
     });

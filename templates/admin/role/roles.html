@@ -3,28 +3,9 @@
 {% block title %}Roles{%endblock%}
 
 {% block body %}
-<h2>Roles</h2>
-<div>
-    <form action="{% if role %}{{url_for('role_api', role_id=role.id)}}{% endif %}" method="post" role="form"
-          class="form-horizontal role_form">
-        <div class="form-group">
-            <label class="col-sm-2 control-label">Role Name :</label>
-
-            <div class="col-sm-10">
-                <input type="text" name="role_name" class="form-control"
-                       value="{% if role %}{{ role.name }}{% else %}ROLE_{% endif %}" placeholder="ROLE_"/>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <div class="col-sm-offset-2 col-sm-10">
-                <input type="submit" class="btn btn-primary" value="Submit" />
-            </div>
-        </div>
-    </form>
-</div>
-{% if roles %}
-<div class="table-responsive">
+<h2><span class="glyphicon glyphicon-bookmark"></span> Roles</h2>
+<hr>
+<div ng-app="" ng-controller="customersController">
     <table class="table table-striped">
         <thead>
         <tr>
@@ -34,65 +15,43 @@
             <th>Delete</th>
         </tr>
         </thead>
-        <tbody>
-        {% for role in roles %}
-        <tr>
-            <td>{{ role.id }}</td>
-            <td>{{ role.name }}</td>
-            <td><a href="{{url_for('role_api', role_id=role.id)}}" class="btn btn-primary">Modify</a></td>
-            <td>
-                <form class="role_delete" action="{{ url_for('role_api', role_id=role.id) }}">
-                    <input type="submit" class="btn btn-warning" onclick="return confirm('Are you sure !!');"
-                           value="Delete">
-                </form>
-
-            </td>
-        </tr>
-        {% endfor %}
-        </tbody>
-        <tfoot></tfoot>
-    </table>
-</div>
-{% endif %}
-
-<hr>
-<div ng-app="" ng-controller="customersController">
-    <table>
-        <thead>
-        <tr>
-            <th>#</th>
-            <th>Title</th>
-            <th>Modify</th>
-        </tr>
-        </thead>
         <tr ng-repeat="x in roles">
             {% raw %}
             <td>{{ x.id }}</td>
             <td>{{ x.name }}</td>
             {% endraw %}
             <td>
-                <button class="btn" ng-click="editRole(x.id)">
+                <button class="btn btn-primary" ng-click="editRole($index)">
                     <span class="glyphicon glyphicon-pencil"></span>  Edit
+                </button>
+            </td>
+            <td>
+                <button class="btn btn-warning" ng-click="deleteRole(x.id, $index)">
+                    <span class="glyphicon glyphicon-pencil"></span>  Delete
                 </button>
             </td>
         </tr>
     </table>
     <hr>
-    <button class="btn btn-success" ng-click="editUser('new')">
-        <span class="glyphicon glyphicon-user"></span> Create New User
-    </button>
-    <hr>
     <form class="form-horizontal">
         <div class="form-group">
-          <label class="col-sm-2 control-label">Role Name:</label>
-          <div class="col-sm-10">
-            <input type="text" ng-model="name" placeholder="Role Name">
-          </div>
+            <label class="col-sm-2 control-label">Role Name:</label>
+
+            <div class="col-sm-10">
+                <input type="hidden" ng-model="id">
+                <input type="text" ng-model="name" placeholder="Role Name">
+            </div>
         </div>
     </form>
     <hr>
-    <button class="btn btn-success" ng-disabled="error || incomplete">
-        <span class="glyphicon glyphicon-save"></span> Save Changes
+    <button class="btn btn-success" ng-click="createRole()">
+        <span class="glyphicon glyphicon-save"></span> Create Role
+    </button>
+    <button class="btn btn-success" ng-click="updateRole()">
+        <span class="glyphicon glyphicon-ok-circle"></span> Update Role
+    </button>
+    <button class="btn btn-success" ng-click="reset()">
+        <span class="glyphicon glyphicon-refresh"></span> RESET
     </button>
 </div>
 
@@ -103,56 +62,60 @@ function customersController($scope,$http) {
     $scope.edit = true;
     $scope.error = false;
     $scope.incomplete = false;
-    $http.get("{{url_for('test')}}")
+    $http.get("/api/role")
     .success(function(data) {
-        $scope.roles = data.json_list;
-        console.log($scope.roles);
+        $scope.roles = data.objects;
     });
 
     $scope.editRole = function(id) {
         if (id == 'new') {
-            $scope.edit = true;
-            $scope.incomplete = true;
             $scope.name = '';
+            $scope.id='';
         } else {
-            $scope.edit = false;
-            console.log($scope.roles);
             $scope.name = $scope.roles[id].name;
+            $scope.id = $scope.roles[id].id;
         }
     };
+
+    $scope.createRole = function() {
+        var data = { name: $scope.name };
+        $http.post("/api/role", data)
+        .success(function(data, status, headers) {
+            $http.get(headers("location")).success(function(data){
+                $scope.roles.push(data)
+            });
+        });
+    };
+
+    $scope.updateRole = function() {
+        var data = { name: $scope.name };
+        $http.put("/api/role/" + $scope.id, data)
+            .success(function(data, status, headers) {
+                    $http.get("/api/role")
+                        .success(function(data) {
+                        $scope.roles = data.objects;
+                    });
+            });
+    };
+
+    $scope.deleteRole = function(id, index) {
+        var r = confirm('Are you sure !!');
+        if (r == true) {
+            $http.delete("/api/role/"+ id)
+            .success(function(data, status, headers) {
+                $scope.roles.splice(index, 1)
+            });
+        }
+    };
+
+    $scope.reset = function() {
+        $scope.name = "";
+    };
+    $scope.reset();
 }
+
 </script>
 {% endblock %}
 
 {% block javascript %}
-<script type="text/javascript">
-jQuery(document).ready(function ($) {
-
-    $(".role_form").submit(function(e){
-        e.preventDefault();
-        var form = $(this).serializeArray();
-        var url = $(this).attr("action");
-        $.ajax({
-            data: form,
-            url: url,
-            type:{% if role %}"PUT"{% else %}"POST"{% endif %},
-            success:function(response){
-                window.location = '{{ url_for('role_api') }}'
-            }
-        });
-    });
-
-    $(".role_delete").click(function(e){
-        e.preventDefault();
-        var url = $(this).attr("action");
-        $.ajax({
-            url: url,
-            type:"DELETE",
-            success:function(response){
-                window.location = '{{ url_for('role_api') }}'
-            }
-        });
-    });
-});
-</script>
 {% endblock %}

@@ -42,16 +42,15 @@
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li class="active"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
-                    <li><a href="{{ url_for('user_api') }}">Users</a></li>
-                    <li><a href="{{ url_for('role_api') }}">Roles</a></li>
-                    <li><a href="{{ url_for('contests') }}">Contests</a></li>
-                    <li><a href="{{ url_for('participations') }}">Participations</a></li>
+                    <li><a href="{{ url_for('users') }}"><span class="glyphicon glyphicon-user"></span> Users</a></li>
+                    <li><a href="{{ url_for('roles') }}"><span class="glyphicon glyphicon-bookmark"></span> Roles</a></li>
+                    <li><a href="{{ url_for('roles') }}"><span class="glyphicon glyphicon-star"></span> Contests</a></li>
+                    <li><a href="{{ url_for('roles') }}"><span class="glyphicon glyphicon-th-list"></span> Participations</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     <li><a href="">Account</a></li>
                     <li><a href="">Clear Cache</a></li>
-                    <li><a href="{{ url_for('logout') }}">Log out</a></li>
+
                 </ul>
             </div>
             <!--/.nav-collapse -->
