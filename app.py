@@ -4,13 +4,11 @@ __author__ = 'pythoo'
 
 from functools import wraps
 import flask
-from flask import Flask, render_template, request, Response, session, flash, redirect, url_for
+from flask import Flask, render_template, request, Response, session, flash, redirect, url_for, jsonify
 import flask.ext.sqlalchemy
 import flask.ext.restless
-from werkzeug.contrib.cache import SimpleCache
-
-from flask.views import MethodView
-cache = SimpleCache()
+import time
+from itsdangerous import JSONWebSignatureSerializer
 
 app = Flask(__name__)
 # TODO: Move into config file
@@ -18,6 +16,30 @@ app.secret_key = 'super_secret'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
 
 db = flask.ext.sqlalchemy.SQLAlchemy(app)
+
+
+def check_credentials():
+    if not request.form['email']:
+        return False
+    elif not request.form['password']:
+        return False
+    else:
+        email = request.form['email']
+        password = request.form['password']
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            return False
+        if user.email != email:
+            return False
+        elif user.password != password:
+            return False
+        elif user.token_expiration < time.time():
+            s = JSONWebSignatureSerializer('secret_key')
+            token = s.dumps({'token': 42})
+            user.token = token
+            user.token_expiration = time.time() + 600
+            db.session.commit()
+            return token
 
 
 class Role(db.Model):
@@ -38,6 +60,8 @@ class User(db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
     role = db.relationship('Role', backref=db.backref('users', lazy='dynamic'))
     password = db.Column(db.String(80))
+    token = db.Column(db.Integer)
+    token_expiration = db.Column(db.Integer)
 
     def __init__(self, contact_name, email, role_id, password):
         self.contact_name = contact_name
@@ -83,6 +107,26 @@ db.session.commit()
 
 manager.create_api(Role, methods=['GET', 'POST', 'DELETE', 'PUT'])
 manager.create_api(User, methods=['GET', 'POST', 'DELETE'], exclude_columns=['password'])
+
+
+@app.route("/token", methods=['POST'])
+def api_token():
+    token = check_credentials()
+    if not token:
+        flash('Oups')
+        return jsonify(token='oups')
+    else:
+        return jsonify(token=token)
+
+
+@app.route("/login_check", methods=['POST'])
+def login_check():
+    token = check_credentials()
+    if not token:
+        flash('Oups')
+        return render_template(url_for('login'))
+    else:
+        return render_template(url_for('users'))
 
 
 @app.route('/admin/users')
