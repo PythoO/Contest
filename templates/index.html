@@ -5,7 +5,7 @@
 {% block body %}
 <div class="jumbotron">
     <h1>{{ contest.title }}</h1>
-    <p class="lead">{{ contest.home_text }}</p>
+    <p class="lead">{{ contest.home_text |safe }}</p>
     <p><a href="{{ url_for('participation', contest_id=contest.id) }}" class="btn btn-primary">Participate</a> </p>
 </div>
 {% endblock %}

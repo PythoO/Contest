@@ -5,6 +5,6 @@
 {% block body %}
 <div class="jumbotron">
     <h1>{{ contest.title }}</h1>
-    <p class="lead">{{ contest.thanks_text }}</p>
+    <p class="lead">{{ contest.thanks_text |safe }}</p>
 </div>
 {% endblock %}
