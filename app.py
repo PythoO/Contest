@@ -18,28 +18,37 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
 db = flask.ext.sqlalchemy.SQLAlchemy(app)
 
 
-def check_credentials():
-    if not request.form['email']:
-        return False
-    elif not request.form['password']:
-        return False
-    else:
+def get_token():
+    try:
         email = request.form['email']
         password = request.form['password']
         user = User.query.filter_by(email=email).first()
-        if not user:
-            return False
         if user.email != email:
             return False
         elif user.password != password:
             return False
-        elif user.token_expiration < time.time():
+        else:
             s = JSONWebSignatureSerializer('secret_key')
-            token = s.dumps({'token': 42})
-            user.token = token
+            s.dumps({'token': 'a5sedrfd'})
+            user.token = s
             user.token_expiration = time.time() + 600
             db.session.commit()
-            return token
+            return s
+    except ValueError as e:
+        app.logger.debug(e.message)
+        return False
+
+
+def check_token(**kwargs):
+    app.logger.debug(kwargs)
+    app.logger.debug(request.form['token'])
+    try:
+        s = JSONWebSignatureSerializer('secret_key')
+        data = s.loads(request.form['token'])
+        pass
+    except ValueError as e:
+        app.logger.debug(e.message)
+        return jsonify({'response': 'Bad Token'})
 
 
 class Role(db.Model):
@@ -93,6 +102,7 @@ class Social(db.Model):
     name = db.Column(db.String(80))
     credentials = db.Column(db.String(255))
 
+
 db.create_all()
 # Create the Flask-Restless API manager.
 manager = flask.ext.restless.APIManager(app, flask_sqlalchemy_db=db)
@@ -105,13 +115,18 @@ db.session.add(user)
 db.session.commit()
 """
 
-manager.create_api(Role, methods=['GET', 'POST', 'DELETE', 'PUT'])
+manager.create_api(Role, methods=['GET', 'POST', 'DELETE', 'PUT'], preprocessors={
+    'GET_SINGLE': [check_token],
+    'GET_MANY': [check_token],
+    'DELETE': [check_token],
+    'POST': [check_token]
+})
 manager.create_api(User, methods=['GET', 'POST', 'DELETE'], exclude_columns=['password'])
 
 
 @app.route("/token", methods=['POST'])
 def api_token():
-    token = check_credentials()
+    token = get_token()
     if not token:
         flash('Oups')
         return jsonify(token='oups')
@@ -121,7 +136,7 @@ def api_token():
 
 @app.route("/login_check", methods=['POST'])
 def login_check():
-    token = check_credentials()
+    token = get_token()
     if not token:
         flash('Oups')
         return render_template(url_for('login'))
