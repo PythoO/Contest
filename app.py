@@ -7,11 +7,13 @@ import flask
 from flask import Flask, render_template, request, Response, session, flash, redirect, url_for, jsonify
 import flask.ext.sqlalchemy
 import flask.ext.restless
+from flask.ext.restless import ProcessingException
 import time
 from itsdangerous import JSONWebSignatureSerializer
 
 app = Flask(__name__)
 # TODO: Move into config file
+app.debug = True
 app.secret_key = 'super_secret'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
 
@@ -29,26 +31,32 @@ def get_token():
             return False
         else:
             s = JSONWebSignatureSerializer('secret_key')
-            s.dumps({'token': 'a5sedrfd'})
-            user.token = s
+            token = s.dumps({'user_id': user.id})
+            user.token = token
             user.token_expiration = time.time() + 600
             db.session.commit()
-            return s
+            return token
     except ValueError as e:
         app.logger.debug(e.message)
         return False
 
 
-def check_token(**kwargs):
-    app.logger.debug(kwargs)
-    app.logger.debug(request.form['token'])
+def check_token(token=None, **kwargs):
     try:
+        token = request.args.get('token')
         s = JSONWebSignatureSerializer('secret_key')
-        data = s.loads(request.form['token'])
-        pass
+        data = s.loads(token)
+        user_id = data['user_id']
+        user = User.query.filter_by(id=user_id).first()
+        if not user:
+            raise ProcessingException(description='Not Authorized', code=401)
+        elif user.token != token:
+            raise ProcessingException(description='Not Authorized', code=401)
+        else:
+            pass
     except ValueError as e:
         app.logger.debug(e.message)
-        return jsonify({'response': 'Bad Token'})
+        raise ProcessingException(description='Not Authorized', code=401)
 
 
 class Role(db.Model):
@@ -118,8 +126,9 @@ db.session.commit()
 manager.create_api(Role, methods=['GET', 'POST', 'DELETE', 'PUT'], preprocessors={
     'GET_SINGLE': [check_token],
     'GET_MANY': [check_token],
+    'POST': [check_token],
     'DELETE': [check_token],
-    'POST': [check_token]
+    'PUT_SINGLE': [check_token]
 })
 manager.create_api(User, methods=['GET', 'POST', 'DELETE'], exclude_columns=['password'])
 
@@ -155,5 +164,4 @@ def roles():
 
 
 if __name__ == '__main__':
-    app.debug = True
     app.run()
