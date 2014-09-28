@@ -5,89 +5,171 @@
 {% block body %}
 <h2><span class="glyphicon glyphicon-user"></span> Users</h2>
 <hr>
-<div>
-    <a href="{{url_for('users')}}" class="btn btn-success">Add New User</a>
-    {% block user_form %}{% endblock %}
-</div>
-{% if not user %}
-<div class="table-responsive">
+
+<div ng-app="" ng-controller="userController">
     <table class="table table-striped" id="users-tbl">
         <thead>
         <tr>
             <th>#</th>
-            <th>Role</th>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>E-mail</th>
+            <th><a href="" ng-click="predicate = 'contact_name'; reverse=!reverse">Contact Name</a></th>
+            <th><a href="" ng-click="predicate = 'email'; reverse=!reverse">E-mail</a></th>
+            <th><a href="" ng-click="predicate = 'role_id'; reverse=!reverse">Role</a></th>
             <th>Modify</th>
             <th>Delete</th>
         </tr>
         </thead>
         <tbody>
-        {% for user in users %}
-        <tr>
+        <tr ng-repeat="user in users | orderBy:predicate:reverse">
+            {% raw %}
             <td>{{ user.id }}</td>
+            <td>{{ user.contact_name }}</td>
+            <td>{{ user.email }}</td>
             <td>{{ user.role.name }}</td>
-            <td>{{ user.first_name}}</td>
-            <td>{{ user.last_name}}</td>
-            <td>{{ user.email}}</td>
-            <td><a href="{{url_for('users', user_id=user.id)}}" class="btn btn-primary">Modify</a></td>
+            {% endraw %}
             <td>
-                <form role="form" action="{{url_for('user', user_id=user.id)}}" method="post" class="delete_form">
-                    <button type="submit" class="btn btn-warning" onclick="confirm('Are you sure !!!');">Delete</button>
-                </form>
-
+                <button class="btn btn-primary" ng-click="editUser($index)">
+                    <span class="glyphicon glyphicon-pencil"></span>  Edit
+                </button>
+            </td>
+            <td>
+                <button class="btn btn-warning" ng-click="deleteUser(user.id, $index)">
+                    <span class="glyphicon glyphicon-pencil"></span>  Delete
+                </button>
             </td>
         </tr>
-        {% endfor %}
         </tbody>
         <tfoot></tfoot>
     </table>
+    <form class="form-horizontal">
+        <input type="hidden" ng-model="id">
+        <div class="form-group">
+            <label class="col-sm-2 control-label">Contact Name:</label>
+            <div class="col-sm-10">
+                <input type="text" ng-model="contact_name" placeholder="Contact Name">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">Email:</label>
+            <div class="col-sm-10">
+                <input type="email" ng-model="email" placeholder="Email">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">Role:</label>
+            <div class="col-sm-10">
+                <select ng-model="role_id" ng-options="role.id as role.name for role in roles">
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">Password:</label>
+            <div class="col-sm-10">
+                <input type="password" ng-model="password">
+            </div>
+        </div>
+    </form>
+    <hr>
+    <button class="btn btn-success" ng-click="createUser()">
+        <span class="glyphicon glyphicon-save"></span> Create User
+    </button>
+    <button class="btn btn-success" ng-click="updateUser()">
+        <span class="glyphicon glyphicon-ok-circle"></span> Update User
+    </button>
+    <button class="btn btn-success" ng-click="reset()">
+        <span class="glyphicon glyphicon-refresh"></span> RESET
+    </button>
+
 </div>
-{% endif %}
+
 {% endblock %}
 
 {% block javascript %}
 <script type="text/javascript">
-$(document).ready(function(){
-    $(".delete_form").submit(function( event ){
-        event.preventDefault();
-        var $form = $(this),
-        url =$form.attr("action");
+function userController($scope,$http) {
+    var url_user = '/api/user'
+    var token = '?token={{ session['logged_in'] }}'
+    var url_role = '/api/role'
 
-        $.ajax({
-            url: url,
-            type: 'DELETE',
-            success: function(result) {
-                // Do something with the result
-                window.location = '{{url_for('users')}}';
-            }
-        });
+    $scope.id = '';
+    $scope.contact_name = '';
+    $scope.email = '';
+    $scope.role_id = '';
+    $scope.password = '';
+    $http.get(url_user + token)
+    .success(function(data) {
+        $scope.users = data.objects;
+    });
+    $http.get(url_role + token)
+    .success(function(data) {
+        $scope.roles = data.objects;
     });
 
-    $( ".user_form" ).submit(function( event ){
-        event.preventDefault();
-        var $form = $(this),
-        data = {
-            'first_name': $form.find( "input[name='first_name']" ).val(),
-            'last_name': $form.find( "input[name='last_name']" ).val(),
-            'email': $form.find( "input[name='email']" ).val(),
-            'password': $form.find( "input[name='password']" ).val(),
-            'role': $form.find( "select[name='role']" ).val(),
-        },
-        url =$form.attr("action");
+    $scope.predicate = 'contact_name';
 
-        $.ajax({
-            url: url,
-            type: {%if user %}'PUT'{% else %}'POST'{% endif %},
-            data: data,
-            success: function(result) {
-                // Do something with the result
-                window.location = '{{url_for('users')}}';
-            }
+    $scope.editUser = function(id) {
+        if (id == 'new') {
+            $scope.contact_name = '';
+            $scope.email = '';
+            $scope.role_id = '';
+            $scope.password = '';
+            $scope.id='';
+        } else {
+            $scope.contact_name = $scope.users[id].contact_name;
+            $scope.email = $scope.users[id].email;
+            $scope.role_id = $scope.users[id].role_id;
+            $scope.id = $scope.users[id].id;
+        }
+    };
+
+    $scope.createUser = function() {
+        var data = {
+            contact_name: $scope.contact_name,
+            email: $scope.email,
+            password: $scope.password,
+            role_id: $scope.role_id,
+        };
+        $http.post(url_user + token, data)
+        .success(function(data, status, headers) {
+            $http.get(url_user+token)
+                        .success(function(data) {
+                        $scope.users = data.objects;
+                    });
         });
-    });
-});
+    };
 
+    $scope.updateUser = function() {
+        var data = {
+            contact_name: $scope.contact_name,
+            email: $scope.email,
+            password: $scope.password,
+            role_id: $scope.role_id,
+        };
+        $http.put(url_user + '/' + $scope.id + token, data)
+            .success(function(data, status, headers) {
+                    $http.get(url_user+token)
+                        .success(function(data) {
+                        $scope.users = data.objects;
+                    });
+            });
+    };
+
+    $scope.deleteUser = function(id, index) {
+        var r = confirm('Are you sure !!');
+        if (r == true) {
+            $http.delete(url_user + '/' + id + token)
+            .success(function(data, status, headers) {
+                $scope.users.splice(index, 1)
+            });
+        }
+    };
+
+    $scope.reset = function() {
+        $scope.contact_name = "";
+        $scope.email = "";
+        $scope.password = "";
+        $scope.role_id = "";
+    };
+    $scope.reset();
+}
 </script>
 {% endblock %}

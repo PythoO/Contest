@@ -5,17 +5,18 @@
 {% block body %}
 <h2><span class="glyphicon glyphicon-bookmark"></span> Roles</h2>
 <hr>
-<div ng-app="" ng-controller="customersController">
+<div ng-app="" ng-controller="roleController">
     <table class="table table-striped">
         <thead>
         <tr>
             <th>#</th>
-            <th>Title</th>
+            <th><a href="" ng-click="predicate = 'name'; reverse=!reverse">Role Name</a></th>
             <th>Modify</th>
             <th>Delete</th>
         </tr>
         </thead>
-        <tr ng-repeat="x in roles">
+        <tbody>
+        <tr ng-repeat="x in roles | orderBy:predicate:reverse">
             {% raw %}
             <td>{{ x.id }}</td>
             <td>{{ x.name }}</td>
@@ -31,6 +32,7 @@
                 </button>
             </td>
         </tr>
+        </tbody>
     </table>
     <hr>
     <form class="form-horizontal">
@@ -56,16 +58,17 @@
 </div>
 
 <script>
-function customersController($scope,$http) {
+function roleController($scope,$http) {
+    var url_role = '/api/role'
+    var token = '?token={{ session['logged_in'] }}'
     $scope.id = '';
     $scope.name = '';
-    $scope.edit = true;
-    $scope.error = false;
-    $scope.incomplete = false;
-    $http.get("/api/role")
+    $http.get(url_role + token)
     .success(function(data) {
         $scope.roles = data.objects;
     });
+
+    $scope.predicate = 'name'
 
     $scope.editRole = function(id) {
         if (id == 'new') {
@@ -79,19 +82,20 @@ function customersController($scope,$http) {
 
     $scope.createRole = function() {
         var data = { name: $scope.name };
-        $http.post("/api/role", data)
+        $http.post(url_role + token, data)
         .success(function(data, status, headers) {
-            $http.get(headers("location")).success(function(data){
-                $scope.roles.push(data)
-            });
+            $http.get(url_role+token)
+                        .success(function(data) {
+                        $scope.roles = data.objects;
+                    });
         });
     };
 
     $scope.updateRole = function() {
         var data = { name: $scope.name };
-        $http.put("/api/role/" + $scope.id, data)
+        $http.put(url_role + '/' + $scope.id + token, data)
             .success(function(data, status, headers) {
-                    $http.get("/api/role")
+                    $http.get(url_role+token)
                         .success(function(data) {
                         $scope.roles = data.objects;
                     });
@@ -101,7 +105,7 @@ function customersController($scope,$http) {
     $scope.deleteRole = function(id, index) {
         var r = confirm('Are you sure !!');
         if (r == true) {
-            $http.delete("/api/role/"+ id)
+            $http.delete(url_role + '/' + id + token)
             .success(function(data, status, headers) {
                 $scope.roles.splice(index, 1)
             });

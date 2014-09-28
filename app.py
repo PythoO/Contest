@@ -35,6 +35,7 @@ def get_token():
             user.token = token
             user.token_expiration = time.time() + 600
             db.session.commit()
+            session['logged_in'] = token
             return token
     except ValueError as e:
         app.logger.debug(e.message)
@@ -114,7 +115,6 @@ class Social(db.Model):
 db.create_all()
 # Create the Flask-Restless API manager.
 manager = flask.ext.restless.APIManager(app, flask_sqlalchemy_db=db)
-
 """
 role = Role('ROLE_ADMIN')
 user = User('Franck Lebrun', 'flebrun@toto.com', 1, 'bibi')
@@ -122,7 +122,6 @@ db.session.add(role)
 db.session.add(user)
 db.session.commit()
 """
-
 manager.create_api(Role, methods=['GET', 'POST', 'DELETE', 'PUT'], preprocessors={
     'GET_SINGLE': [check_token],
     'GET_MANY': [check_token],
@@ -130,7 +129,38 @@ manager.create_api(Role, methods=['GET', 'POST', 'DELETE', 'PUT'], preprocessors
     'DELETE': [check_token],
     'PUT_SINGLE': [check_token]
 })
-manager.create_api(User, methods=['GET', 'POST', 'DELETE'], exclude_columns=['password'])
+
+manager.create_api(User, methods=['GET', 'POST', 'DELETE', 'PUT'], exclude_columns=['password'], preprocessors={
+    'GET_SINGLE': [check_token],
+    'GET_MANY': [check_token],
+    'POST': [check_token],
+    'DELETE': [check_token],
+    'PUT_SINGLE': [check_token]
+})
+
+manager.create_api(Contest, methods=['GET', 'POST', 'DELETE', 'PUT'], exclude_columns=['password'], preprocessors={
+    'GET_SINGLE': [check_token],
+    'GET_MANY': [check_token],
+    'POST': [check_token],
+    'DELETE': [check_token],
+    'PUT_SINGLE': [check_token]
+})
+
+manager.create_api(MailCampaign, methods=['GET', 'POST', 'DELETE', 'PUT'], exclude_columns=['password'], preprocessors={
+    'GET_SINGLE': [check_token],
+    'GET_MANY': [check_token],
+    'POST': [check_token],
+    'DELETE': [check_token],
+    'PUT_SINGLE': [check_token]
+})
+
+manager.create_api(Social, methods=['GET', 'POST', 'DELETE', 'PUT'], exclude_columns=['password'], preprocessors={
+    'GET_SINGLE': [check_token],
+    'GET_MANY': [check_token],
+    'POST': [check_token],
+    'DELETE': [check_token],
+    'PUT_SINGLE': [check_token]
+})
 
 
 @app.route("/token", methods=['POST'])
@@ -143,14 +173,29 @@ def api_token():
         return jsonify(token=token)
 
 
-@app.route("/login_check", methods=['POST'])
+@app.route("/login")
+def login():
+    return render_template("login.html")
+
+@app.route("/login/check", methods=['POST'])
 def login_check():
     token = get_token()
     if not token:
-        flash('Oups')
-        return render_template(url_for('login'))
+        return redirect(url_for('login'))
     else:
-        return render_template(url_for('users'))
+        return redirect(url_for('admin'))
+
+
+@app.route("/logout")
+def logout():
+    session.pop('logged_in', None)
+    flash('You were logged out.')
+    return redirect(url_for('login'))
+
+
+@app.route("/admin/dashboard")
+def admin():
+    return render_template("admin/admin.html")
 
 
 @app.route('/admin/users')
