@@ -207,6 +207,10 @@ def users():
 def roles():
     return render_template('admin/role/roles.html')
 
+@app.route('/admin/contests')
+def contests():
+    return render_template('admin/contest/contests.html')
+
 
 if __name__ == '__main__':
     app.run()

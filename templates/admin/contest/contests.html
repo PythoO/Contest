@@ -3,8 +3,8 @@
 {% block title %}{%endblock%}
 
 {% block body %}
-<h2>Contests</h2>
-<div class="table-responsive">
+<h2><span class="glyphicon glyphicon-star"></span> Contests</h2>
+<div class="table-responsive" ng-app="" ng-controller="contestController">
     <table class="table table-striped">
         <thead>
         <tr>
@@ -15,16 +15,247 @@
         </tr>
         </thead>
         <tbody>
-        {% for contest in contests %}
-        <tr>
+        <tr ng-repeat="contest in contests | orderBy:predicate:reverse">
+            {% raw %}
             <td>{{ contest.id }}</td>
             <td>{{ contest.title }}</td>
-            <td><a href="{{ url_for('contest_modify', contest_id=contest.id) }}" title="" class="btn btn-primary">Modify</a></td>
-            <td><a href="" title="" class="btn btn-warning">Delete</a></td>
+            {% endraw %}
+            <td>
+                <button class="btn btn-primary" ng-click="editContest(contest)">
+                    <span class="glyphicon glyphicon-pencil"></span>  Edit
+                </button>
+            </td>
+            <td>
+                <button class="btn btn-warning" ng-click="deleteContest(contest)">
+                    <span class="glyphicon glyphicon-pencil"></span>  Delete
+                </button>
+            </td>
         </tr>
-        {% endfor %}
         </tbody>
         <tfoot></tfoot>
     </table>
+
+    <hr>
+    <ul id="tabs" class="nav nav-tabs" role="tablist" data-tabs="tabs">
+        <li class="active"><a href="#contest" role="tab" data-toggle="tab">Contest</a></li>
+        <li class=""><a href="#builder" role="tab" data-toggle="tab">Contest Builder</a></li>
+        <li class=""><a href="#social" role="tab" data-toggle="tab">Social Network</a></li>
+        <li class=""><a href="#campaign" role="tab" data-toggle="tab">Campaign Monitor</a></li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade in active" id="contest">
+            <h3><span class="glyphicon glyphicon-briefcase"></span> Contest</h3>
+            <form class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Contest Title:</label>
+                    <div class="col-sm-10">
+                        <input type="hidden" ng-model="id">
+                        <input type="text" ng-model="title" class="form-control" placeholder="Contest Title">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Contest Description:</label>
+                    <div class="col-sm-10">
+                        <textarea ng-model="description" class="form-control"></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Home page:</label>
+                    <div class="col-sm-10">
+                        <textarea ng-model="home_text" class="form-control"></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Participation page:</label>
+                    <div class="col-sm-10">
+                        <textarea ng-model="participation_text" class="form-control"></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Thank you page:</label>
+                    <div class="col-sm-10">
+                        <textarea ng-model="thanks_text" class="form-control"></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Copyrights:</label>
+                    <div class="col-sm-10">
+                        <textarea ng-model="copyrights_text" class="form-control"></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Background Image:</label>
+                    <div class="col-sm-10">
+                        <input type="file" ng-model="copyrights_text" class="form-control" />
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="tab-pan fade" id="builder">
+            <h3><span class="glyphicon glyphicon-certificate"></span> Contest builder</h3>
+
+        </div>
+        <div class="tab-pan fade" id="social">
+            <h3><span class="glyphicon glyphicon-heart-empty"></span> Social Network</h3>
+            <fieldset>
+                <legend>Facebook</legend>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Facebook Optin:</label>
+                    <div class="col-sm-10">
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="fb_optin" id="optionsRadios1" value="fb_like" checked>Like
+                            </label>
+                        </div>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="fb_optin" id="optionsRadios2" value="fb_like_and_share">Like + Share
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Facebook App ID:</label>
+                    <div class="col-sm-10">
+                        <input type="text" ng-model="fb_app_id" class="form-control" placeholder="Facebook App ID" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Facebook Description:</label>
+                    <div class="col-sm-10">
+                        <textarea ng-model="fb_description" class="form-control"></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Facebook Share URL:</label>
+                    <div class="col-sm-10">
+                        <input type="text" ng-model="fb_share_url" class="form-control" placeholder="Facebook Share URL" />
+                    </div>
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>Google +</legend>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Google + App ID:</label>
+                    <div class="col-sm-10">
+                        <input type="text" ng-model="gplus_app_id" class="form-control" placeholder="Google + App ID" />
+                    </div>
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>Twitter</legend>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Twitter App ID:</label>
+                    <div class="col-sm-10">
+                        <input type="text" ng-model="twitter_app_id" class="form-control" placeholder="Twitter + App ID" />
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+        <div class="tab-pan fade" id="campaign">
+            <h3><span class="glyphicon glyphicon-envelope"></span> Campaign Monitor</h3>
+            <fieldset>
+                <legend>Campaign Monitor</legend>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">ID Key:</label>
+                    <div class="col-sm-10">
+                        <input type="text" ng-model="dialog_id_key" class="form-control" placeholder="ID Key" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Key:</label>
+                    <div class="col-sm-10">
+                        <input type="text" ng-model="dialog_key" class="form-control" placeholder="Key" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Project:</label>
+                    <div class="col-sm-10">
+                        <input type="text" ng-model="dialog_project" class="form-control" placeholder="Project" />
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+
+    <hr>
+    <button class="btn btn-success" ng-click="createContest()">
+        <span class="glyphicon glyphicon-save"></span> Create Contest
+    </button>
+    <button class="btn btn-success" ng-click="updateContest()">
+        <span class="glyphicon glyphicon-ok-circle"></span> Update Contest
+    </button>
+    <button class="btn btn-success" ng-click="reset()">
+        <span class="glyphicon glyphicon-refresh"></span> RESET
+    </button>
+
 </div>
+
+<script type="text/javascript">
+function contestController($scope,$http) {
+    var url_contest = '/api/contest'
+    var token = '?token={{ session['logged_in'] }}'
+    $scope.id = '';
+    $scope.title = '';
+    $http.get(url_contest + token)
+    .success(function(data) {
+        $scope.contests = data.objects;
+    });
+
+    $scope.predicate = 'title'
+
+    $scope.editContest = function(contest) {
+        $scope.title = contest.title;
+        $scope.id = contest.id;
+    };
+
+    $scope.createContest = function() {
+        var data = { title: $scope.title };
+        $http.post(url_contest + token, data)
+        .success(function(data, status, headers) {
+            $http.get(url_contest + token)
+                        .success(function(data) {
+                        $scope.contests = data.objects;
+                    });
+        });
+    };
+
+    $scope.updateContest = function() {
+        var data = { title: $scope.title };
+        $http.put(url_contest + '/' + $scope.id + token, data)
+            .success(function(data, status, headers) {
+                    $http.get(url_contest+token)
+                        .success(function(data) {
+                        $scope.contests = data.objects;
+                    });
+            });
+    };
+
+    $scope.deleteContest = function(contest) {
+        var r = confirm('Are you sure !!');
+        if (r == true) {
+            $http.delete(url_contest + '/' + contest.id + token)
+            .success(function(data, status, headers) {
+                $scope.contests.splice($scope.contests.indexOf(contest), 1)
+            });
+        }
+    };
+
+    $scope.reset = function() {
+        $scope.title = "";
+    };
+
+    $scope.reset();
+}
+</script>
+
+{% endblock %}
+
+{%block javascript %}
+<script type="text/javascript">
+jQuery(document).ready(function ($) {
+$('#tabs').tab('show');
+});
+</script>
 {% endblock %}
