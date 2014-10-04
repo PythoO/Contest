@@ -1,0 +1,61 @@
+<h3><span class="glyphicon glyphicon-heart-empty"></span> Social Network</h3>
+<fieldset>
+    <legend>Facebook</legend>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">Facebook Optin:</label>
+
+        <div class="col-sm-10">
+            <div class="radio">
+                <label>
+                    <input type="radio" name="fb_optin" id="optionsRadios1" value="fb_like" checked>Like
+                </label>
+            </div>
+            <div class="radio">
+                <label>
+                    <input type="radio" name="fb_optin" id="optionsRadios2" value="fb_like_and_share">Like + Share
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">Facebook App ID:</label>
+
+        <div class="col-sm-10">
+            <input type="text" ng-model="fb_app_id" class="form-control" placeholder="Facebook App ID"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">Facebook Description:</label>
+
+        <div class="col-sm-10">
+            <textarea ng-model="fb_description" class="form-control"></textarea>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">Facebook Share URL:</label>
+
+        <div class="col-sm-10">
+            <input type="text" ng-model="fb_share_url" class="form-control" placeholder="Facebook Share URL"/>
+        </div>
+    </div>
+</fieldset>
+<fieldset>
+    <legend>Google +</legend>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">Google + App ID:</label>
+
+        <div class="col-sm-10">
+            <input type="text" ng-model="gplus_app_id" class="form-control" placeholder="Google + App ID"/>
+        </div>
+    </div>
+</fieldset>
+<fieldset>
+    <legend>Twitter</legend>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">Twitter App ID:</label>
+
+        <div class="col-sm-10">
+            <input type="text" ng-model="twitter_app_id" class="form-control" placeholder="Twitter + App ID"/>
+        </div>
+    </div>
+</fieldset>

@@ -1,143 +1,53 @@
-{% extends "admin/layout.html" %}
+<h3><span class="glyphicon glyphicon-briefcase"></span> Contest</h3>
+<form class="form-horizontal">
+    <div class="form-group">
+        <label class="col-sm-2 control-label">Contest Title:</label>
 
-{% block title %}{%endblock%}
-
-{% block body %}
-<ul id="tabs" class="nav nav-tabs" role="tablist" data-tabs="tabs">
-    <li class="active"><a href="#contest" role="tab" data-toggle="tab">Contest</a></li>
-    <li class=""><a href="#builder" role="tab" data-toggle="tab">Contest Builder</a></li>
-</ul>
-
-<div class="tab-content">
-    <div class="tab-pane fade in active" id="contest">
-        <form action="{% if contest %}{{url_for('contest_modify', contest_id=contest.id)}}{% endif %}" method="post"
-              role="form" class="form-horizontal">
-            <div class="form-group">
-                <label for="name" class="col-sm-2 control-label">Contest Name</label>
-
-                <div class="col-sm-10">
-                    <input id="name" type="text" value="{% if contest %}{{ contest.title }}{% endif %}"
-                           class="form-control"/>
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="home_text" class="col-sm-2 control-label">Home Page Text</label>
-
-                <div class="col-sm-10">
-                    <textarea id="home_text" class="form-control" rows="3">{% if contest %}{{ contest.home_text }}{%
-                        endif %}</textarea>
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="participation_text" class="col-sm-2 control-label">Participation Page Text</label>
-
-                <div class="col-sm-10">
-                    <textarea id="participation_text" class="form-control" rows="3">{% if contest %}{{
-                        contest.participation_text }}{% endif %}</textarea>
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="thanks_text" class="col-sm-2 control-label">Thank you Page Text</label>
-
-                <div class="col-sm-10">
-                    <textarea id="thanks_text" class="form-control" rows="3">{% if contest %}{{ contest.thanks_text }}{%
-                        endif %}</textarea>
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="role" class="col-sm-2 control-label">Contest Role</label>
-
-                <div class="col-sm-10">
-                    <select id="role" class="form-control">
-                        {% for role in roles %}
-                        <option value="{{role.id}}">{{ role.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <div class="col-sm-offset-2 col-sm-10">
-                    <button class="btn btn-primary">Submit</button>
-                </div>
-            </div>
-        </form>
+        <div class="col-sm-10">
+            <input type="hidden" ng-model="id">
+            <input type="text" ng-model="title" class="form-control" placeholder="Contest Title">
+        </div>
     </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">Contest Description:</label>
 
-    <div class="tab-pan fade" id="builder">
-        <h2>Form Fields</h2>
-
-        <form name="form_fields" action="" method="post">
-            <div class="add_form_field">
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">Field Type</label>
-
-                    <div class="col-sm-10">
-                        <select name="types" class="form-control">
-                            <option value="birthday">Birthday</option>
-                            <option value="checkbox">Checkbox</option>
-                            <option value="email_optin">email Opt-in</option>
-                            <option value="file">File Upload</option>
-                            <option value="First_last_name">First & Last Name</option>
-                            <option value="password">Password</option>
-                            <option value="radio">Radio</option>
-                            <option value="dropdown">DropDown</option>
-                            <option value="textarea">TextArea</option>
-                            <option value="Text">Text</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div id="field_birthday">
-                    <div class="form-group">
-                        <label class="col-sm-2 control-label">Label</label>
-
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" value="" name="field[firstlast][label]">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-sm-2 control-label">Required Field</label>
-
-                        <div class="col-sm-10">
-                            <select class="form-control" type="dropdown" name="field[birthday][required]">
-                                <option value="no">No</option>
-                                <option value="yes">Yes</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="field_checkbox">
-                    <div class="form-group">
-                        <label class="col-sm-2 control-label">Label</label>
-
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" value="" name="field[firstlast][label]">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="col-sm-2 control-label">Default</label>
-
-                        <div class="col-sm-10">
-                            <select class="form-control" type="dropdown" name="field[emailoptin][default]">
-                                <option value="checked">Checked</option>
-                                <option value="notchecked">Not Checked</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </form>
+        <div class="col-sm-10">
+            <textarea ng-model="description" class="form-control"></textarea>
+        </div>
     </div>
-</div>
-{% endblock %}
+    <div class="form-group">
+        <label class="col-sm-2 control-label">Home page:</label>
 
-{%block javascript %}
-<script type="text/javascript">
-jQuery(document).ready(function ($) {
-$('#tabs').tab();
-});
-</script>
-{% endblock %}
+        <div class="col-sm-10">
+            <textarea ng-model="home_text" class="form-control"></textarea>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">Participation page:</label>
+
+        <div class="col-sm-10">
+            <textarea ng-model="participation_text" class="form-control"></textarea>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">Thank you page:</label>
+
+        <div class="col-sm-10">
+            <textarea ng-model="thanks_text" class="form-control"></textarea>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">Copyrights:</label>
+
+        <div class="col-sm-10">
+            <textarea ng-model="copyrights_text" class="form-control"></textarea>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">Background Image:</label>
+
+        <div class="col-sm-10">
+            <input type="file" ng-model="copyrights_text" class="form-control"/>
+        </div>
+    </div>
+</form>

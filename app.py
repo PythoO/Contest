@@ -25,18 +25,21 @@ def get_token():
         email = request.form['email']
         password = request.form['password']
         user = User.query.filter_by(email=email).first()
-        if user.email != email:
-            return False
-        elif user.password != password:
+        if not user:
             return False
         else:
-            s = JSONWebSignatureSerializer('secret_key')
-            token = s.dumps({'user_id': user.id})
-            user.token = token
-            user.token_expiration = time.time() + 600
-            db.session.commit()
-            session['logged_in'] = token
-            return token
+            if user.email != email:
+                return False
+            elif user.password != password:
+                return False
+            else:
+                s = JSONWebSignatureSerializer('secret_key')
+                token = s.dumps({'user_id': user.id})
+                user.token = token
+                user.token_expiration = time.time() + 600
+                db.session.commit()
+                session['logged_in'] = token
+                return token
     except ValueError as e:
         app.logger.debug(e.message)
         return False

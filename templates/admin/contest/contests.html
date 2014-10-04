@@ -36,146 +36,25 @@
     </table>
 
     <hr>
-    <ul id="tabs" class="nav nav-tabs" role="tablist" data-tabs="tabs">
-        <li class="active"><a href="#contest" role="tab" data-toggle="tab">Contest</a></li>
+    <ul id="tabs" class="nav nav-tabs" role="tablist">
+        <li class=""><a href="#contest" role="tab" data-toggle="tab">Contest</a></li>
         <li class=""><a href="#builder" role="tab" data-toggle="tab">Contest Builder</a></li>
         <li class=""><a href="#social" role="tab" data-toggle="tab">Social Network</a></li>
         <li class=""><a href="#campaign" role="tab" data-toggle="tab">Campaign Monitor</a></li>
     </ul>
 
-    <div class="tab-content">
-        <div class="tab-pane fade in active" id="contest">
-            <h3><span class="glyphicon glyphicon-briefcase"></span> Contest</h3>
-            <form class="form-horizontal">
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">Contest Title:</label>
-                    <div class="col-sm-10">
-                        <input type="hidden" ng-model="id">
-                        <input type="text" ng-model="title" class="form-control" placeholder="Contest Title">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">Contest Description:</label>
-                    <div class="col-sm-10">
-                        <textarea ng-model="description" class="form-control"></textarea>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">Home page:</label>
-                    <div class="col-sm-10">
-                        <textarea ng-model="home_text" class="form-control"></textarea>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">Participation page:</label>
-                    <div class="col-sm-10">
-                        <textarea ng-model="participation_text" class="form-control"></textarea>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">Thank you page:</label>
-                    <div class="col-sm-10">
-                        <textarea ng-model="thanks_text" class="form-control"></textarea>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">Copyrights:</label>
-                    <div class="col-sm-10">
-                        <textarea ng-model="copyrights_text" class="form-control"></textarea>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">Background Image:</label>
-                    <div class="col-sm-10">
-                        <input type="file" ng-model="copyrights_text" class="form-control" />
-                    </div>
-                </div>
-            </form>
+    <div id="tab_content" class="tab-content">
+        <div class="tab-pane fade active in" id="contest">
+            {% include "admin/contest/contest.html" ignore missing %}
         </div>
         <div class="tab-pan fade" id="builder">
-            <h3><span class="glyphicon glyphicon-certificate"></span> Contest builder</h3>
-
+            {% include "admin/contest/builder.html" ignore missing %}
         </div>
         <div class="tab-pan fade" id="social">
-            <h3><span class="glyphicon glyphicon-heart-empty"></span> Social Network</h3>
-            <fieldset>
-                <legend>Facebook</legend>
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">Facebook Optin:</label>
-                    <div class="col-sm-10">
-                        <div class="radio">
-                            <label>
-                                <input type="radio" name="fb_optin" id="optionsRadios1" value="fb_like" checked>Like
-                            </label>
-                        </div>
-                        <div class="radio">
-                            <label>
-                                <input type="radio" name="fb_optin" id="optionsRadios2" value="fb_like_and_share">Like + Share
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">Facebook App ID:</label>
-                    <div class="col-sm-10">
-                        <input type="text" ng-model="fb_app_id" class="form-control" placeholder="Facebook App ID" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">Facebook Description:</label>
-                    <div class="col-sm-10">
-                        <textarea ng-model="fb_description" class="form-control"></textarea>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">Facebook Share URL:</label>
-                    <div class="col-sm-10">
-                        <input type="text" ng-model="fb_share_url" class="form-control" placeholder="Facebook Share URL" />
-                    </div>
-                </div>
-            </fieldset>
-            <fieldset>
-                <legend>Google +</legend>
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">Google + App ID:</label>
-                    <div class="col-sm-10">
-                        <input type="text" ng-model="gplus_app_id" class="form-control" placeholder="Google + App ID" />
-                    </div>
-                </div>
-            </fieldset>
-            <fieldset>
-                <legend>Twitter</legend>
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">Twitter App ID:</label>
-                    <div class="col-sm-10">
-                        <input type="text" ng-model="twitter_app_id" class="form-control" placeholder="Twitter + App ID" />
-                    </div>
-                </div>
-            </fieldset>
+            {% include "admin/contest/social.html" ignore missing %}
         </div>
         <div class="tab-pan fade" id="campaign">
-            <h3><span class="glyphicon glyphicon-envelope"></span> Campaign Monitor</h3>
-            <fieldset>
-                <legend>Campaign Monitor</legend>
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">ID Key:</label>
-                    <div class="col-sm-10">
-                        <input type="text" ng-model="dialog_id_key" class="form-control" placeholder="ID Key" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">Key:</label>
-                    <div class="col-sm-10">
-                        <input type="text" ng-model="dialog_key" class="form-control" placeholder="Key" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">Project:</label>
-                    <div class="col-sm-10">
-                        <input type="text" ng-model="dialog_project" class="form-control" placeholder="Project" />
-                    </div>
-                </div>
-            </fieldset>
+            {% include "admin/contest/campaigns.html" ignore missing %}
         </div>
     </div>
 
@@ -255,7 +134,10 @@ function contestController($scope,$http) {
 {%block javascript %}
 <script type="text/javascript">
 jQuery(document).ready(function ($) {
-$('#tabs').tab('show');
+    $('#tabs s').click(function(e){
+        e.preventDefault()
+        $(this).tab('show');
+    });
 });
 </script>
 {% endblock %}
