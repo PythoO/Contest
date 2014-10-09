@@ -1,4 +1,7 @@
 {% extends "admin/layout.html" %}
+{% block javascript %}
+<script src="{{ url_for('static', filename='js/admin/builder.js') }}"></script>
+{%endblock %}
 
 {% block title %}{%endblock%}
 
@@ -36,24 +39,24 @@
     </table>
 
     <hr>
-    <ul id="tabs" class="nav nav-tabs" role="tablist">
-        <li class=""><a href="#contest" role="tab" data-toggle="tab">Contest</a></li>
-        <li class=""><a href="#builder" role="tab" data-toggle="tab">Contest Builder</a></li>
-        <li class=""><a href="#social" role="tab" data-toggle="tab">Social Network</a></li>
-        <li class=""><a href="#campaign" role="tab" data-toggle="tab">Campaign Monitor</a></li>
+    <ul class="nav nav-tabs">
+        <li class="active"><a href="#contest" data-toggle="tab">Contest</a></li>
+        <li><a href="#builder" data-toggle="tab">Contest Builder</a></li>
+        <li><a href="#social" data-toggle="tab">Social Network</a></li>
+        <li><a href="#campaign" data-toggle="tab">Campaign Monitor</a></li>
     </ul>
 
-    <div id="tab_content" class="tab-content">
-        <div class="tab-pane fade active in" id="contest">
+    <div class="tab-content">
+        <div id="contest" class="tab-pane fade active in">
             {% include "admin/contest/contest.html" ignore missing %}
         </div>
-        <div class="tab-pan fade" id="builder">
+        <div id="builder" class="tab-pane fade">
             {% include "admin/contest/builder.html" ignore missing %}
         </div>
-        <div class="tab-pan fade" id="social">
+        <div id="social" class="tab-pane fade">
             {% include "admin/contest/social.html" ignore missing %}
         </div>
-        <div class="tab-pan fade" id="campaign">
+        <div id="campaign" class="tab-pane fade">
             {% include "admin/contest/campaigns.html" ignore missing %}
         </div>
     </div>
@@ -128,16 +131,5 @@ function contestController($scope,$http) {
     $scope.reset();
 }
 </script>
-
 {% endblock %}
 
-{%block javascript %}
-<script type="text/javascript">
-jQuery(document).ready(function ($) {
-    $('#tabs s').click(function(e){
-        e.preventDefault()
-        $(this).tab('show');
-    });
-});
-</script>
-{% endblock %}
